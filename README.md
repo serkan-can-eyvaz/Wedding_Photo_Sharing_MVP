@@ -10,7 +10,7 @@ Bu aşamada yalnızca repository iskeleti, çalışma kuralları, örnek environ
 
 ## Hedef Mimari
 
-- Backend: Java 21 + Spring Boot modular monolith
+- Backend: Java 17 + Spring Boot modular monolith
 - Frontend: React + Vite, mobile-first
 - Veritabanı: PostgreSQL
 - Medya depolama: Cloudflare R2 (S3-compatible)

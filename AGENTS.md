@@ -4,7 +4,7 @@
 
 - M0-M19 kilometre taşlarını sırayla uygula; aktif kilometre taşının dışındaki özellikleri ekleme.
 - Bu ticari MVP için basit, sürdürülebilir bir modular monolith yaklaşımını koru.
-- Backend Java 21 + Spring Boot, frontend React + Vite, veritabanı PostgreSQL ve medya depolama Cloudflare R2/S3-compatible olacaktır.
+- Backend Java 17 + Spring Boot, frontend React + Vite, veritabanı PostgreSQL ve medya depolama Cloudflare R2/S3-compatible olacaktır.
 - Misafir deneyimini mobile-first tasarla; öncelikli tarayıcılar iPhone Safari ve Android Chrome'dur.
 - Misafirler hesap oluşturmadan, presigned URL ile medyayı doğrudan object storage'a yüklemelidir.
 - Production dağıtımı tek VPS üzerinde Docker Compose ve Nginx ile; CI/CD GitHub -> Jenkins -> registry -> VPS akışıyla yapılacaktır.
