@@ -11,4 +11,6 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     List<Event> findAllByOwnerIdOrderByCreatedAtDesc(UUID ownerId);
 
     Optional<Event> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+    Optional<Event> findByPublicTokenAndActiveTrue(String publicToken);
 }
