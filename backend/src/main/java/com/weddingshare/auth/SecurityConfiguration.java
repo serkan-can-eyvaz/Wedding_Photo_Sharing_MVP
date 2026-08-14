@@ -67,6 +67,20 @@ public class SecurityConfiguration {
         configuration.setAllowedHeaders(List.of("Content-Type"));
         configuration.setAllowCredentials(false);
         source.registerCorsConfiguration("/api/public/**", configuration);
+
+        CorsConfiguration loginConfiguration = new CorsConfiguration();
+        loginConfiguration.setAllowedOrigins(List.of(allowedOrigin));
+        loginConfiguration.setAllowedMethods(List.of("POST", "OPTIONS"));
+        loginConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        loginConfiguration.setAllowCredentials(false);
+        source.registerCorsConfiguration("/api/auth/login", loginConfiguration);
+
+        CorsConfiguration adminConfiguration = new CorsConfiguration();
+        adminConfiguration.setAllowedOrigins(List.of(allowedOrigin));
+        adminConfiguration.setAllowedMethods(List.of("GET", "OPTIONS"));
+        adminConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        adminConfiguration.setAllowCredentials(false);
+        source.registerCorsConfiguration("/api/events/**", adminConfiguration);
         return source;
     }
 
