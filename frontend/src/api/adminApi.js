@@ -36,14 +36,16 @@ export async function login(email, password) {
   return response.json();
 }
 
-async function authenticatedRequest(path) {
+async function authenticatedRequest(path, options = {}) {
   const session = getAdminSession();
   if (!session) {
     throw new AdminApiError(401);
   }
 
   return request(path, {
+    ...options,
     headers: {
+      ...options.headers,
       Authorization: `Bearer ${session.token}`,
     },
   });
@@ -62,4 +64,27 @@ export async function getAdminEvent(eventId) {
 export async function getEventMedia(eventId) {
   const response = await authenticatedRequest(`/api/events/${encodeURIComponent(eventId)}/media`);
   return response.json();
+}
+
+async function download(path, options) {
+  const response = await authenticatedRequest(path, options);
+  return response.blob();
+}
+
+export function downloadSingleMedia(eventId, mediaId) {
+  return download(`/api/events/${encodeURIComponent(eventId)}/media/${encodeURIComponent(mediaId)}/download`);
+}
+
+export function downloadSelectedMedia(eventId, mediaIds) {
+  return download(`/api/events/${encodeURIComponent(eventId)}/media/download`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ mediaIds }),
+  });
+}
+
+export function downloadAllMedia(eventId) {
+  return download(`/api/events/${encodeURIComponent(eventId)}/media/download-all`);
 }

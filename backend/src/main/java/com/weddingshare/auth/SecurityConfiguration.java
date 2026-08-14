@@ -77,7 +77,7 @@ public class SecurityConfiguration {
 
         CorsConfiguration adminConfiguration = new CorsConfiguration();
         adminConfiguration.setAllowedOrigins(List.of(allowedOrigin));
-        adminConfiguration.setAllowedMethods(List.of("GET", "OPTIONS"));
+        adminConfiguration.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
         adminConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         adminConfiguration.setAllowCredentials(false);
         source.registerCorsConfiguration("/api/events/**", adminConfiguration);

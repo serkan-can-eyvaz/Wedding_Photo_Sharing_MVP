@@ -280,6 +280,10 @@ button,
   overflow-wrap: anywhere;
 }
 
+.media-download-button {
+  margin: 0 0.5rem 0.75rem;
+}
+
 @media (min-width: 48rem) {
   .app-shell {
     padding: 2rem;

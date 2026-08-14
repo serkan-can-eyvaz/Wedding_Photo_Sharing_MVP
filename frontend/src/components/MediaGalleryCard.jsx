@@ -1,6 +1,6 @@
 import { formatFileSize } from '../upload/uploadRules.js';
 
-export default function MediaGalleryCard({ media, selected, onToggle }) {
+export default function MediaGalleryCard({ media, selected, onToggle, onDownload, downloadDisabled }) {
   const isImage = media.mimeType.startsWith('image/');
   const createdAt = new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })
     .format(new Date(media.createdAt));
@@ -21,6 +21,9 @@ export default function MediaGalleryCard({ media, selected, onToggle }) {
         <span>{isImage ? 'Fotoğraf' : 'Video'} · {formatFileSize(media.sizeBytes)}</span>
         <span>{createdAt}</span>
       </div>
+      <button type="button" className="secondary-button media-download-button" onClick={() => onDownload(media)} disabled={downloadDisabled}>
+        İndir
+      </button>
     </article>
   );
 }
