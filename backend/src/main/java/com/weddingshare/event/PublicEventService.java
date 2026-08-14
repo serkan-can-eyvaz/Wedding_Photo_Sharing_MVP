@@ -14,8 +14,11 @@ public class PublicEventService {
     }
 
     public PublicEventResponse getActiveEvent(String publicToken) {
+        return PublicEventResponse.from(findActiveEvent(publicToken));
+    }
+
+    public Event findActiveEvent(String publicToken) {
         return eventRepository.findByPublicTokenAndActiveTrue(publicToken)
-                .map(PublicEventResponse::from)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 }
