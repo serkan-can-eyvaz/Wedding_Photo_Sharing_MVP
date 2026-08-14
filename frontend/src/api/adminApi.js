@@ -88,3 +88,7 @@ export function downloadSelectedMedia(eventId, mediaIds) {
 export function downloadAllMedia(eventId) {
   return download(`/api/events/${encodeURIComponent(eventId)}/media/download-all`);
 }
+
+export function downloadEventQr(eventId) {
+  return download(`/api/events/${encodeURIComponent(eventId)}/qr`);
+}

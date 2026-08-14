@@ -1,7 +1,10 @@
 package com.weddingshare.event;
 
 import jakarta.validation.Valid;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,9 +25,11 @@ import java.util.UUID;
 public class EventController {
 
     private final EventService eventService;
+    private final EventQrService eventQrService;
 
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, EventQrService eventQrService) {
         this.eventService = eventService;
+        this.eventQrService = eventQrService;
     }
 
     @PostMapping
@@ -40,6 +46,18 @@ public class EventController {
     @GetMapping("/{id}")
     public EventResponse get(Authentication authentication, @PathVariable UUID id) {
         return eventService.get(authenticatedUserId(authentication), id);
+    }
+
+    @GetMapping("/{id}/qr")
+    public ResponseEntity<byte[]> downloadQr(Authentication authentication, @PathVariable UUID id) {
+        byte[] png = eventQrService.generateForOwnedEvent(authenticatedUserId(authentication), id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_PNG)
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename("event-qr.png", StandardCharsets.UTF_8)
+                        .build()
+                        .toString())
+                .body(png);
     }
 
     @PutMapping("/{id}")
