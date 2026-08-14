@@ -14,6 +14,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -88,5 +90,14 @@ class PublicEventControllerTests {
     void adminEndpointsRemainProtectedWithoutAuthentication() throws Exception {
         mockMvc.perform(get("/api/events"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void publicApiAllowsTheConfiguredCorsOrigin() throws Exception {
+        mockMvc.perform(options("/api/public/events/example-token")
+                        .header("Origin", "http://localhost:5173")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"));
     }
 }

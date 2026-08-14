@@ -54,6 +54,116 @@ video {
   overflow-wrap: anywhere;
 }
 
+button,
+.file-picker-button {
+  border: 0;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.guest-upload-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.guest-event-header {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.guest-event-header h1,
+.guest-event-header p {
+  margin: 0;
+}
+
+.guest-event-date,
+.upload-hint,
+.upload-file-details span {
+  color: #52606d;
+}
+
+.file-picker-button,
+.primary-button {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  background: #1769aa;
+  color: #ffffff;
+  text-align: center;
+}
+
+.file-picker-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.secondary-button {
+  align-self: start;
+  padding: 0.5rem 0.75rem;
+  background: #e4e7eb;
+  color: #1f2933;
+}
+
+.upload-hint,
+.guest-error,
+.guest-success,
+.guest-page-state {
+  margin: 0;
+}
+
+.guest-error,
+.upload-message,
+.upload-file-details .upload-status-failed {
+  color: #b42318;
+}
+
+.guest-success,
+.upload-file-details .upload-status-completed {
+  color: #18794e;
+}
+
+.upload-file-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.upload-file-row {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid #d9e2ec;
+  border-radius: 0.5rem;
+}
+
+.upload-file-details {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.upload-file-row progress {
+  width: 100%;
+  height: 0.75rem;
+}
+
 @media (min-width: 48rem) {
   .app-shell {
     padding: 2rem;
