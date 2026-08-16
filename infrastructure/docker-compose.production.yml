@@ -1,0 +1,79 @@
+services:
+  nginx:
+    image: nginx:1.27-alpine
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN in infrastructure/.env.production}
+      NGINX_ENVSUBST_FILTER: APP_DOMAIN
+    volumes:
+      - ./nginx/production.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ${TLS_CERT_DIR:?Set TLS_CERT_DIR in infrastructure/.env.production}:/etc/nginx/certs:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      backend:
+        condition: service_started
+      frontend:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - edge
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in infrastructure/.env.production}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in infrastructure/.env.production}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in infrastructure/.env.production}
+    volumes:
+      - postgres_data_production:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - data
+
+  backend:
+    build:
+      context: ../backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:?Set POSTGRES_DB in infrastructure/.env.production}
+      DB_USERNAME: ${POSTGRES_USER:?Set POSTGRES_USER in infrastructure/.env.production}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in infrastructure/.env.production}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Set ADMIN_EMAIL in infrastructure/.env.production}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in infrastructure/.env.production}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in infrastructure/.env.production}
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:?Set CORS_ALLOWED_ORIGIN in infrastructure/.env.production}
+      APP_PUBLIC_BASE_URL: ${APP_PUBLIC_BASE_URL:?Set APP_PUBLIC_BASE_URL in infrastructure/.env.production}
+      R2_ENDPOINT: ${R2_ENDPOINT:?Set R2_ENDPOINT in infrastructure/.env.production}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:?Set R2_ACCESS_KEY_ID in infrastructure/.env.production}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:?Set R2_SECRET_ACCESS_KEY in infrastructure/.env.production}
+      R2_BUCKET: ${R2_BUCKET:?Set R2_BUCKET in infrastructure/.env.production}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - edge
+      - data
+
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:?Set VITE_API_BASE_URL in infrastructure/.env.production}
+    restart: unless-stopped
+    networks:
+      - edge
+
+networks:
+  edge:
+  data:
+
+volumes:
+  postgres_data_production:
