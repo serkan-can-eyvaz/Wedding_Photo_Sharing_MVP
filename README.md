@@ -49,6 +49,14 @@ Production PostgreSQL verisi `postgres_data_production` named volume'unda kalır
 
 R2 bucket private kalır. R2 Dashboard'da production frontend origin'i için CORS elle eklenmelidir; presigned upload browser'dan doğrudan R2'ye gider, medya body Nginx veya backend üzerinden geçmez.
 
+## Jenkins CI (M17)
+
+GitHub `main` push webhook'u Jenkins'teki tek Pipeline job'ını tetikler. Jenkins agent'ında Java 17, Node 22, Docker CLI, Docker Compose plugin'i ve `openssl` bulunmalıdır. Job'da non-secret `REGISTRY_IMAGE_PREFIX` (örneğin `ghcr.io/<owner>/wedding-photo-sharing`) tanımlanmalı; `ghcr-registry` Credentials Binding kaydı GHCR kullanıcı adı ve package write token'ını içermelidir.
+
+Pipeline backend/frontend testlerini çalıştırır, Docker image'larını üretir, production Compose ile Nginx config'ini dummy değerlerle doğrular ve yalnız başarılıysa immutable full Git SHA tag'leriyle GHCR'a push eder. `latest` tag kullanılmaz. Docker socket erişimi hostta root-equivalent yetkidir; bu nedenle yalnız güvenilir `main` branch webhook build'leri çalıştırılmalı, PR/fork pipeline'ları açılmamalıdır.
+
+M17 yalnız CI'dır: VPS SSH, image pull, `docker compose up`, restart, rollback ve deploy M18 kapsamındadır.
+
 ## Repository Yapısı
 
 ```text
