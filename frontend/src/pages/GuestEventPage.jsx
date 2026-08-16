@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { GuestApiError, createPresignedUpload, getPublicEvent, registerMedia } from '../api/guestUploadApi.js';
 import UploadFileRow from '../components/UploadFileRow.jsx';
 import { uploadToR2 } from '../upload/r2Upload.js';
+import { createReadyUploadJobs, createRetryUploadJobs } from '../upload/uploadQueue.js';
 import { validateFileSelection } from '../upload/uploadRules.js';
 
 const MAX_CONCURRENT_UPLOADS = 3;
@@ -15,6 +16,7 @@ export default function GuestEventPage() {
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   const uploadId = useRef(0);
   const uploadsRef = useRef([]);
+  const batchRunningRef = useRef(false);
 
   const updateUploads = useCallback((updater) => {
     setUploads((current) => {
@@ -58,13 +60,13 @@ export default function GuestEventPage() {
     };
   }, [token]);
 
-  const processUpload = useCallback(async (id, retryRegistration) => {
+  const processUpload = useCallback(async (id, isRetry) => {
     const item = uploadsRef.current.find((candidate) => candidate.id === id);
-    if (!item || (!retryRegistration && item.status !== 'ready') || (retryRegistration && item.status !== 'failed')) {
+    if (!item || (!isRetry && item.status !== 'ready') || (isRetry && item.status !== 'failed')) {
       return;
     }
 
-    let storageKey = retryRegistration && item.uploadedToR2 ? item.storageKey : null;
+    let storageKey = isRetry && item.uploadedToR2 ? item.storageKey : null;
     let objectUploaded = Boolean(storageKey);
 
     try {
@@ -110,23 +112,28 @@ export default function GuestEventPage() {
   }, [token, updateUpload]);
 
   const runBatch = useCallback(async (jobs) => {
-    if (jobs.length === 0) {
+    if (jobs.length === 0 || batchRunningRef.current) {
       return;
     }
 
+    batchRunningRef.current = true;
     setIsBatchRunning(true);
-    let nextJobIndex = 0;
+    try {
+      let nextJobIndex = 0;
 
-    async function worker() {
-      while (nextJobIndex < jobs.length) {
-        const job = jobs[nextJobIndex];
-        nextJobIndex += 1;
-        await processUpload(job.id, job.retryRegistration);
+      async function worker() {
+        while (nextJobIndex < jobs.length) {
+          const job = jobs[nextJobIndex];
+          nextJobIndex += 1;
+          await processUpload(job.id, job.isRetry);
+        }
       }
-    }
 
-    await Promise.all(Array.from({ length: Math.min(MAX_CONCURRENT_UPLOADS, jobs.length) }, worker));
-    setIsBatchRunning(false);
+      await Promise.all(Array.from({ length: Math.min(MAX_CONCURRENT_UPLOADS, jobs.length) }, worker));
+    } finally {
+      batchRunningRef.current = false;
+      setIsBatchRunning(false);
+    }
   }, [processUpload]);
 
   const handleSelection = (event) => {
@@ -153,16 +160,15 @@ export default function GuestEventPage() {
   };
 
   const handleUpload = () => {
-    const jobs = uploadsRef.current
-      .filter((item) => item.status === 'ready')
-      .map((item) => ({ id: item.id, retryRegistration: false }));
-    runBatch(jobs);
+    runBatch(createReadyUploadJobs(uploadsRef.current));
   };
 
   const handleRetry = (id) => {
-    if (!isBatchRunning) {
-      runBatch([{ id, retryRegistration: true }]);
-    }
+    runBatch(createRetryUploadJobs(uploadsRef.current, [id]));
+  };
+
+  const handleRetryFailed = () => {
+    runBatch(createRetryUploadJobs(uploadsRef.current));
   };
 
   const handleRemove = (id) => {
@@ -182,6 +188,7 @@ export default function GuestEventPage() {
   }
 
   const hasReadyFiles = uploads.some((item) => item.status === 'ready');
+  const hasFailedFiles = uploads.some((item) => item.status === 'failed');
   const allCompleted = uploads.length > 0 && uploads.every((item) => item.status === 'completed');
   const eventDate = new Intl.DateTimeFormat('tr-TR', { dateStyle: 'long' }).format(new Date(`${eventState.event.eventDate}T00:00:00`));
 
@@ -222,6 +229,11 @@ export default function GuestEventPage() {
       {hasReadyFiles && (
         <button type="button" className="primary-button" onClick={handleUpload} disabled={isBatchRunning}>
           Yüklemeyi başlat
+        </button>
+      )}
+      {hasFailedFiles && (
+        <button type="button" className="secondary-button" onClick={handleRetryFailed} disabled={isBatchRunning}>
+          Başarısız dosyaları tekrar dene
         </button>
       )}
       {allCompleted && <p className="guest-success" role="status">Fotoğraf ve videolarınız başarıyla yüklendi.</p>}
