@@ -779,6 +779,8 @@ button,
 .admin-operation-links > div { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
 .admin-operation-links span { flex: 1 0 10rem; color: var(--color-muted); font-size: 0.78rem; }
 .admin-operation-links a { color: var(--color-dark-brown); font-weight: 700; }
+.admin-operation-feedback { margin: 0; padding: 0.85rem 1rem; border-left: 2px solid var(--color-charcoal); color: var(--color-charcoal); background: var(--color-surface-muted); }
+.admin-operation-feedback-error { border-left-color: var(--color-espresso); color: var(--color-espresso); }
 .admin-event-form { display: grid; max-width: 42rem; gap: 1rem; padding: 1.25rem; border: 1px solid var(--color-border); background: var(--color-surface); }
 .admin-event-form label { display: grid; gap: 0.4rem; font-weight: 700; }
 .admin-event-form label small { color: var(--color-muted); font-size: 0.75rem; font-weight: 400; }

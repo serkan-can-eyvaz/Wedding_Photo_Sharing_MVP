@@ -12,6 +12,7 @@ import {
 } from '../api/adminApi.js';
 import { clearAdminSession } from '../auth/adminSession.js';
 import MediaGalleryCard from '../components/MediaGalleryCard.jsx';
+import { copyTextToClipboard } from '../utils/clipboard.js';
 
 export default function AdminGalleryPage() {
   const { id } = useParams();
@@ -24,11 +25,13 @@ export default function AdminGalleryPage() {
   const [editForm, setEditForm] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [copyFeedback, setCopyFeedback] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     setSelectedIds(new Set());
     setDownloadError('');
+    setCopyFeedback(null);
     setState({ status: 'loading', event: null, media: [] });
 
     Promise.all([getAdminEvent(id), getEventMedia(id)])
@@ -61,12 +64,8 @@ export default function AdminGalleryPage() {
   };
 
   const copyLink = async (link, label) => {
-    try {
-      await navigator.clipboard.writeText(link);
-      setDownloadError(`${label} kopyalandı.`);
-    } catch {
-      setDownloadError(`${label} kopyalanamadı.`);
-    }
+    const copied = await copyTextToClipboard(link);
+    setCopyFeedback({ type: copied ? 'success' : 'error', message: `${label} ${copied ? 'kopyalandı' : 'kopyalanamadı'}.` });
   };
 
   const saveEdit = async (event) => {
@@ -149,6 +148,7 @@ export default function AdminGalleryPage() {
             <div><span>Misafir yükleme linki</span><a href={state.event.publicUrl} target="_blank" rel="noreferrer">Yükleme sayfasını aç</a><button type="button" className="secondary-button" onClick={() => copyLink(state.event.publicUrl, 'Misafir yükleme linki')}>Kopyala</button></div>
             <div><span>Müşteri galeri linki</span><a href={state.event.viewerUrl} target="_blank" rel="noreferrer">Galeriyi aç</a><button type="button" className="secondary-button" onClick={() => copyLink(state.event.viewerUrl, 'Müşteri galeri linki')}>Kopyala</button></div>
           </section>
+          {copyFeedback && <p className={`admin-operation-feedback admin-operation-feedback-${copyFeedback.type}`} role={copyFeedback.type === 'success' ? 'status' : 'alert'}>{copyFeedback.message}</p>}
           {isEditing && editForm && <form className="admin-event-form admin-inline-form" onSubmit={saveEdit}>
             <label>Etkinlik adı<input required value={editForm.name} onChange={(event) => setEditForm({ ...editForm, name: event.target.value })} /></label>
             <label>Tarih<input required type="date" value={editForm.eventDate} onChange={(event) => setEditForm({ ...editForm, eventDate: event.target.value })} /></label>

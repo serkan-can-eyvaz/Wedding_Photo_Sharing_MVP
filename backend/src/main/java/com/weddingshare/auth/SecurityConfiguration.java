@@ -100,7 +100,7 @@ public class SecurityConfiguration {
             if (!StringUtils.hasText(adminEmail) || !StringUtils.hasText(adminPassword)) {
                 throw new IllegalStateException("Admin bootstrap credentials must be configured");
             }
-            if (userRepository.findByEmail(adminEmail).isEmpty()) {
+            if (userRepository.count() == 0) {
                 userRepository.save(new User(adminEmail, passwordEncoder.encode(adminPassword)));
             }
         };

@@ -31,6 +31,8 @@ PostgreSQL şeması `infrastructure/postgres/init.sql` ile yalnızca `postgres_d
 
 Backend, başlarken R2 endpoint, access key, secret ve bucket değerlerini doğrular. Local `.env` içindeki dummy R2 değerleri yalnızca backend startup/configuration denemesi için kullanılabilir; upload, preview ve download çalıştırmaz. Bu akışları test etmek için untracked `.env` içinde gerçek R2 bilgileri sağlayın.
 
+`ADMIN_EMAIL` ve `ADMIN_PASSWORD` yalnız `users` tablosu boşken ilk admin hesabını oluşturmak için kullanılır. Mevcut herhangi bir kullanıcı varken backend bu değerlerle hesap oluşturmaz veya mevcut email/password hash'ini değiştirmez.
+
 ## Production Docker Compose (M16)
 
 Production VPS'te `infrastructure/production.env.example` dosyasını untracked `infrastructure/.env.production` olarak kopyalayın ve tüm placeholder değerleri gerçek production değerleriyle değiştirin. Bu dosya, TLS certificate/private key dosyaları ve R2 credential'ları tracked değildir.
@@ -48,6 +50,8 @@ Yalnız Nginx `80` ve `443` portlarını yayınlar. Frontend, backend ve Postgre
 Production PostgreSQL verisi `postgres_data_production` named volume'unda kalır. `infrastructure/postgres/init.sql` yalnız volume ilk kez boş oluşturulduğunda çalışır; mevcut volume otomatik migrate edilmez. Şema değişiklikleri için sonradan açık bir migration planı gerekir. Minimum manuel backup örneği: `docker compose --env-file infrastructure/.env.production -f infrastructure/docker-compose.production.yml exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup.sql`; restore işlemi boş/uygun bir veritabanına `psql` ile yapılmalıdır.
 
 R2 bucket private kalır. R2 Dashboard'da production frontend origin'i için CORS elle eklenmelidir; presigned upload browser'dan doğrudan R2'ye gider, medya body Nginx veya backend üzerinden geçmez.
+
+Fresh production DB/volume için ilk backend başlangıcından **önce** final `ADMIN_EMAIL` ve güçlü `ADMIN_PASSWORD` değerlerini `infrastructure/.env.production` dosyasına yazın. Bootstrap sonrası bu environment değerlerini değiştirmek mevcut admin credential'ını değiştirmez ve ikinci admin oluşturmaz. Parola değişikliği bu MVP'de ayrı, kontrollü bir operasyon gerektirir; otomatik reseed veya DB reset kullanılmaz.
 
 ## Jenkins CI (M17)
 
