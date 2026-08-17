@@ -1,13 +1,15 @@
-const MEBIBYTE = 1024 * 1024;
-const MAX_FILES_PER_BATCH = 30;
+export const MEBIBYTE = 1024 * 1024;
+export const MAX_FILES_PER_BATCH = 30;
+export const MAX_IMAGE_SIZE_BYTES = 20 * MEBIBYTE;
+export const MAX_VIDEO_SIZE_BYTES = 500 * MEBIBYTE;
 
 const rulesByMimeType = new Map([
-  ['image/jpeg', { category: 'Fotoğraf', maxSizeBytes: 20 * MEBIBYTE }],
-  ['image/png', { category: 'Fotoğraf', maxSizeBytes: 20 * MEBIBYTE }],
-  ['image/heic', { category: 'Fotoğraf', maxSizeBytes: 20 * MEBIBYTE }],
-  ['image/heif', { category: 'Fotoğraf', maxSizeBytes: 20 * MEBIBYTE }],
-  ['video/mp4', { category: 'Video', maxSizeBytes: 250 * MEBIBYTE }],
-  ['video/quicktime', { category: 'Video', maxSizeBytes: 250 * MEBIBYTE }],
+  ['image/jpeg', { category: 'Fotoğraf', maxSizeBytes: MAX_IMAGE_SIZE_BYTES }],
+  ['image/png', { category: 'Fotoğraf', maxSizeBytes: MAX_IMAGE_SIZE_BYTES }],
+  ['image/heic', { category: 'Fotoğraf', maxSizeBytes: MAX_IMAGE_SIZE_BYTES }],
+  ['image/heif', { category: 'Fotoğraf', maxSizeBytes: MAX_IMAGE_SIZE_BYTES }],
+  ['video/mp4', { category: 'Video', maxSizeBytes: MAX_VIDEO_SIZE_BYTES }],
+  ['video/quicktime', { category: 'Video', maxSizeBytes: MAX_VIDEO_SIZE_BYTES }],
 ]);
 
 export function validateFileSelection(files) {

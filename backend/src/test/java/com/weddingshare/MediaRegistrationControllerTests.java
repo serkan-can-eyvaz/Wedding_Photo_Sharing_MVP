@@ -34,7 +34,8 @@ class MediaRegistrationControllerTests {
 
     private static final String ADMIN_EMAIL = "admin@example.com";
     private static final long MAX_IMAGE_SIZE_BYTES = 20L * 1024 * 1024;
-    private static final long MAX_VIDEO_SIZE_BYTES = 250L * 1024 * 1024;
+    private static final long PREVIOUS_MAX_VIDEO_SIZE_BYTES = 250L * 1024 * 1024;
+    private static final long MAX_VIDEO_SIZE_BYTES = 500L * 1024 * 1024;
 
     @Autowired
     private MockMvc mockMvc;
@@ -97,6 +98,20 @@ class MediaRegistrationControllerTests {
         Media savedMedia = mediaRepository.findAll().get(0);
         assertThat(savedMedia.getMimeType()).isEqualTo("video/mp4");
         assertThat(savedMedia.getSizeBytes()).isEqualTo(MAX_VIDEO_SIZE_BYTES);
+    }
+
+    @Test
+    void formerVideoLimitRegistersMetadataReturnedByR2() throws Exception {
+        String token = "previous-video-limit-registration-token";
+        String storageKey = storageKey(token, "mp4");
+        createEvent(token, true);
+        when(r2ObjectMetadataService.getObjectMetadata(storageKey))
+                .thenReturn(new R2ObjectMetadata("video/mp4", PREVIOUS_MAX_VIDEO_SIZE_BYTES));
+
+        mockMvc.perform(registerRequest(token, storageKey, "video.mp4"))
+                .andExpect(status().isCreated());
+
+        assertThat(mediaRepository.findAll().get(0).getSizeBytes()).isEqualTo(PREVIOUS_MAX_VIDEO_SIZE_BYTES);
     }
 
     @Test

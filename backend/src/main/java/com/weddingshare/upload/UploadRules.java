@@ -10,7 +10,7 @@ import java.util.Set;
 public final class UploadRules {
 
     private static final long MAX_IMAGE_SIZE_BYTES = 20L * 1024 * 1024;
-    private static final long MAX_VIDEO_SIZE_BYTES = 250L * 1024 * 1024;
+    private static final long MAX_VIDEO_SIZE_BYTES = 500L * 1024 * 1024;
 
     private static final Map<String, UploadRule> RULES = Map.of(
             "image/jpeg", new UploadRule("image/jpeg", MAX_IMAGE_SIZE_BYTES, "jpg"),

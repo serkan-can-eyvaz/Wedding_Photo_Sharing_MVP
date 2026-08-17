@@ -8,6 +8,31 @@ import { validateFileSelection } from '../upload/uploadRules.js';
 
 const MAX_CONCURRENT_UPLOADS = 3;
 
+function GuestBrandHeader() {
+  return (
+    <header className="guest-brand-header">
+      <div className="guest-brand" aria-label="Marka Adı">
+        <span className="guest-brand-mark" aria-hidden="true">✦</span>
+        <span>Marka Adı</span>
+      </div>
+      <span className="guest-brand-context">ETKİNLİK GALERİSİ</span>
+    </header>
+  );
+}
+
+function GuestPageState({ title, message }) {
+  return (
+    <section className="guest-page-state">
+      <GuestBrandHeader />
+      <div className="guest-state-copy">
+        <p className="guest-state-label">ETKİNLİK GALERİSİ</p>
+        <h1>{title}</h1>
+        <p>{message}</p>
+      </div>
+    </section>
+  );
+}
+
 export default function GuestEventPage() {
   const { token } = useParams();
   const [eventState, setEventState] = useState({ status: 'loading' });
@@ -176,67 +201,91 @@ export default function GuestEventPage() {
   };
 
   if (eventState.status === 'loading') {
-    return <p className="guest-page-state">Etkinlik yükleniyor...</p>;
+    return <GuestPageState title="Etkinlik hazırlanıyor." message="Galeri bilgileri yükleniyor." />;
   }
 
   if (eventState.status === 'not-found') {
-    return <p className="guest-page-state">Bu etkinlik bulunamadı veya artık aktif değil.</p>;
+    return <GuestPageState title="Bu etkinlik şu anda kullanılamıyor." message="Bağlantıyı kontrol edip tekrar deneyebilirsiniz." />;
   }
 
   if (eventState.status === 'error') {
-    return <p className="guest-page-state">Etkinlik bilgisi alınamadı. Lütfen daha sonra tekrar deneyin.</p>;
+    return <GuestPageState title="Galeriye şu anda ulaşılamıyor." message="Lütfen bağlantınızı kontrol edip daha sonra tekrar deneyin." />;
   }
 
   const hasReadyFiles = uploads.some((item) => item.status === 'ready');
   const hasFailedFiles = uploads.some((item) => item.status === 'failed');
   const allCompleted = uploads.length > 0 && uploads.every((item) => item.status === 'completed');
+  const completedCount = uploads.filter((item) => item.status === 'completed').length;
   const eventDate = new Intl.DateTimeFormat('tr-TR', { dateStyle: 'long' }).format(new Date(`${eventState.event.eventDate}T00:00:00`));
 
   return (
     <section className="guest-upload-page">
-      <header className="guest-event-header">
-        <p className="guest-event-date">{eventDate}</p>
-        <h1>{eventState.event.name}</h1>
-        <p>Anılarınızı bizimle paylaşın.</p>
-      </header>
+      <GuestBrandHeader />
 
-      <label className="file-picker-button">
-        Fotoğraf veya video seç
-        <input
-          type="file"
-          multiple
-          accept="image/jpeg,image/png,image/heic,image/heif,video/mp4,video/quicktime"
-          onChange={handleSelection}
-        />
-      </label>
-      <p className="upload-hint">Bir seferde en fazla 30 dosya seçebilirsiniz.</p>
-      {selectionError && <p className="guest-error" role="alert">{selectionError}</p>}
+      <main className="guest-upload-content">
+        <header className="guest-event-header">
+          <p className="guest-event-eyebrow">ETKİNLİK GALERİSİ</p>
+          <h1>{eventState.event.name}</h1>
+          <p className="guest-event-date">{eventDate}</p>
+          <p className="guest-event-intro">Çektiğiniz fotoğraf ve videoları buraya ekleyin.</p>
+        </header>
 
-      {uploads.length > 0 && (
-        <ul className="upload-file-list">
-          {uploads.map((item) => (
-            <UploadFileRow
-              key={item.id}
-              item={item}
-              onRemove={handleRemove}
-              onRetry={handleRetry}
-              retryDisabled={isBatchRunning}
+        <section className="guest-upload-intro" aria-labelledby="guest-upload-title">
+          <p className="guest-upload-eyebrow">ANILARI PAYLAŞIN</p>
+          <h2 id="guest-upload-title">Bu geceyi sizin gözünüzden de görelim.</h2>
+          <p>Fotoğraf ve videolarınızı seçin. Yüklenen tüm anılar çiftin özel galerisinde toplanır.</p>
+        </section>
+
+        <div className="guest-upload-surface">
+          <label className="file-picker-button guest-file-picker">
+            <span className="guest-file-picker-mark" aria-hidden="true">+</span>
+            <span className="guest-file-picker-copy"><strong>Fotoğraf veya video ekle</strong><span>Birden fazla dosya seçebilirsiniz</span></span>
+            <input
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/heic,image/heif,video/mp4,video/quicktime"
+              onChange={handleSelection}
             />
-          ))}
-        </ul>
-      )}
+          </label>
+          <p className="guest-upload-limits"><span>30 DOSYAYA KADAR</span><span>FOTOĞRAF 20 MB</span><span>VİDEO 500 MB</span></p>
+          {selectionError && <p className="guest-error" role="alert">{selectionError}</p>}
+        </div>
 
-      {hasReadyFiles && (
-        <button type="button" className="primary-button" onClick={handleUpload} disabled={isBatchRunning}>
-          Yüklemeyi başlat
-        </button>
-      )}
-      {hasFailedFiles && (
-        <button type="button" className="secondary-button" onClick={handleRetryFailed} disabled={isBatchRunning}>
-          Başarısız dosyaları tekrar dene
-        </button>
-      )}
-      {allCompleted && <p className="guest-success" role="status">Fotoğraf ve videolarınız başarıyla yüklendi.</p>}
+        {uploads.length > 0 && (
+          <section className="guest-upload-selection" aria-label="Seçilen dosyalar">
+            <div className="guest-upload-selection-header"><span>SEÇİLEN DOSYALAR</span><strong>{uploads.length} dosya</strong></div>
+            <ul className="upload-file-list">
+              {uploads.map((item) => (
+                <UploadFileRow
+                  key={item.id}
+                  item={item}
+                  onRemove={handleRemove}
+                  onRetry={handleRetry}
+                  retryDisabled={isBatchRunning}
+                />
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <div className="guest-upload-actions">
+          {hasReadyFiles && (
+            <button type="button" className="primary-button guest-upload-primary" onClick={handleUpload} disabled={isBatchRunning}>
+              Yüklemeyi başlat <span aria-hidden="true">→</span>
+            </button>
+          )}
+          {hasFailedFiles && (
+            <button type="button" className="secondary-button guest-retry-all" onClick={handleRetryFailed} disabled={isBatchRunning}>
+              Başarısız dosyaları tekrar dene <span aria-hidden="true">→</span>
+            </button>
+          )}
+        </div>
+
+        {hasFailedFiles && <div className="guest-upload-feedback guest-upload-feedback-error" role="alert"><span>BAZI DOSYALAR YÜKLENEMEDİ</span><p>Bağlantınızı kontrol edip tekrar deneyebilirsiniz.</p></div>}
+        {allCompleted && <div className="guest-upload-feedback guest-upload-feedback-success" role="status"><span>ANILAR EKLENDİ</span><p>Teşekkürler. Fotoğraf ve videolarınız galeriye ulaştı.</p><small>{completedCount} dosya başarıyla yüklendi.</small></div>}
+
+        <p className="guest-upload-trust">Yüklenen anılar etkinlik galerisine eklenir.</p>
+      </main>
     </section>
   );
 }

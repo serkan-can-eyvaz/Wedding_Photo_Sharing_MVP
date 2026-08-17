@@ -98,6 +98,13 @@ video {
   padding: 0;
 }
 
+.app-shell.app-shell-guest {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
 .placeholder-page {
   overflow-wrap: anywhere;
 }
@@ -210,6 +217,452 @@ button,
 .upload-file-row progress {
   width: 100%;
   height: 0.75rem;
+}
+
+/* Guest upload: mobile-first editorial task flow. */
+.guest-upload-page,
+.guest-page-state {
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.guest-brand-header {
+  display: flex;
+  width: min(100% - 2rem, 60rem);
+  min-height: 4.6rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.guest-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.guest-brand-mark {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-espresso);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  font-size: 0.76rem;
+}
+
+.guest-brand-context,
+.guest-event-eyebrow,
+.guest-upload-eyebrow,
+.guest-upload-selection-header span,
+.guest-upload-limits span,
+.guest-upload-feedback > span,
+.guest-state-label {
+  color: var(--color-espresso);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.guest-brand-context {
+  color: var(--color-muted);
+  font-size: 0.56rem;
+  text-align: right;
+}
+
+.guest-upload-content,
+.guest-state-copy {
+  display: grid;
+  gap: 2rem;
+  width: min(100% - 2rem, 60rem);
+  margin: 0 auto;
+  padding: 2.6rem 0 calc(2.75rem + env(safe-area-inset-bottom));
+}
+
+.guest-event-header {
+  display: grid;
+  gap: 0;
+  padding-bottom: 1.8rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.guest-event-header h1,
+.guest-upload-intro h2,
+.guest-state-copy h1 {
+  margin: 0.6rem 0 0;
+  color: var(--color-text);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.55rem, 11vw, 4.6rem);
+  font-weight: 500;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.guest-event-date {
+  margin: 0.8rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.guest-event-intro {
+  max-width: 30rem;
+  margin: 1.15rem 0 0;
+  color: var(--color-dark-brown);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.guest-upload-intro {
+  display: grid;
+  gap: 0;
+}
+
+.guest-upload-intro h2 {
+  max-width: 19ch;
+  font-size: clamp(1.95rem, 8vw, 3.3rem);
+  line-height: 1.04;
+}
+
+.guest-upload-intro > p:not(.guest-upload-eyebrow) {
+  max-width: 34rem;
+  margin: 0.85rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.96rem;
+  line-height: 1.65;
+}
+
+.guest-upload-surface {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.guest-file-picker {
+  position: relative;
+  display: grid;
+  min-height: 12.5rem;
+  place-items: center;
+  gap: 0.85rem;
+  padding: 1.4rem;
+  border: 1px dashed var(--color-warm-gray);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  text-align: center;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.guest-file-picker:focus-within {
+  border-color: var(--color-dark-brown);
+  background: var(--color-surface-muted);
+}
+
+.guest-file-picker-mark {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border: 1px solid var(--color-taupe);
+  border-radius: 50%;
+  color: var(--color-espresso);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.guest-file-picker-copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.guest-file-picker-copy strong {
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.guest-file-picker-copy span {
+  color: var(--color-muted);
+  font-size: 0.84rem;
+}
+
+.guest-upload-limits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.8rem;
+  margin: 0;
+  color: var(--color-muted);
+}
+
+.guest-upload-limits span:not(:last-child)::after {
+  margin-left: 0.8rem;
+  color: var(--color-warm-gray);
+  content: '·';
+}
+
+.guest-error {
+  padding: 0.85rem 1rem;
+  border-left: 2px solid var(--color-espresso);
+  color: var(--color-espresso);
+  background: var(--color-surface-muted);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.guest-upload-selection {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.guest-upload-selection-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.guest-upload-selection-header strong {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+}
+
+.guest-upload-page .upload-file-list {
+  gap: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.guest-upload-page .upload-file-row {
+  grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.upload-file-thumbnail {
+  display: grid;
+  width: 3.25rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-soft-white);
+  background: var(--color-dark-brown);
+  font-size: 0.8rem;
+}
+
+.upload-file-thumbnail-video {
+  color: var(--color-charcoal);
+  background: var(--color-light-gray);
+}
+
+.guest-upload-page .upload-file-details {
+  gap: 0.2rem;
+  overflow: hidden;
+}
+
+.upload-file-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.upload-file-title-row strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.guest-upload-page .upload-file-details > span:not(.upload-status),
+.guest-upload-page .upload-file-details small {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.upload-status {
+  flex: 0 0 auto;
+  color: var(--color-taupe);
+  font-size: 0.59rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.upload-status-completed { color: var(--color-charcoal); }
+.upload-status-failed { color: var(--color-espresso); }
+
+.upload-file-progress {
+  height: 0.28rem;
+  margin-top: 0.28rem;
+  overflow: hidden;
+  background: var(--color-light-gray);
+}
+
+.upload-file-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--color-espresso);
+  transition: width var(--transition-base);
+}
+
+.upload-file-row-completed .upload-file-progress > span { background: var(--color-charcoal); }
+.upload-file-row-registering .upload-file-progress > span { background: var(--color-dark-brown); }
+
+.upload-message {
+  color: var(--color-espresso) !important;
+  font-size: 0.72rem !important;
+}
+
+.upload-file-actions {
+  display: flex;
+  align-items: center;
+}
+
+.guest-upload-page .secondary-button {
+  min-height: 2.4rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-dark-brown);
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.guest-upload-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.guest-upload-primary {
+  min-height: 3.25rem;
+  gap: 0.55rem;
+  padding: 0.82rem 1.15rem;
+  border-radius: var(--radius-md);
+  color: var(--color-soft-white);
+  background: var(--color-charcoal);
+  box-shadow: var(--shadow-sm);
+}
+
+.guest-upload-primary span,
+.guest-retry-all span {
+  transition: transform var(--transition-base);
+}
+
+.guest-retry-all {
+  min-height: 3rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-dark-brown);
+  background: var(--color-surface-muted);
+  font-weight: 800;
+}
+
+.guest-upload-feedback {
+  display: grid;
+  gap: 0.42rem;
+  padding: 1.15rem 0 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.guest-upload-feedback p,
+.guest-upload-feedback small {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.guest-upload-feedback-success > span { color: var(--color-charcoal); }
+.guest-upload-feedback-error > span { color: var(--color-espresso); }
+
+.guest-upload-trust {
+  margin: 0;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: 0.77rem;
+  line-height: 1.55;
+}
+
+.guest-state-copy {
+  align-content: center;
+  min-height: calc(100vh - 4.6rem);
+  padding-bottom: calc(3rem + env(safe-area-inset-bottom));
+}
+
+.guest-state-copy > p:not(.guest-state-label) {
+  max-width: 30rem;
+  margin: 1rem 0 0;
+  color: var(--color-muted);
+  line-height: 1.65;
+}
+
+@media (hover: hover) {
+  .guest-file-picker:hover {
+    border-color: var(--color-dark-brown);
+    background: var(--color-surface-muted);
+    transform: translateY(-1px);
+  }
+
+  .guest-upload-primary:hover {
+    background: var(--color-espresso);
+    box-shadow: var(--shadow-md);
+  }
+
+  .guest-upload-primary:hover span,
+  .guest-retry-all:hover span { transform: translateX(0.2rem); }
+
+  .guest-upload-page .secondary-button:hover,
+  .guest-retry-all:hover { border-color: var(--color-taupe); background: var(--color-surface); }
+}
+
+@media (max-width: 27rem) {
+  .guest-brand-context { display: none; }
+  .guest-upload-page .upload-file-row { grid-template-columns: 2.85rem minmax(0, 1fr); }
+  .upload-file-thumbnail { width: 2.85rem; }
+  .upload-file-actions { grid-column: 2; }
+  .upload-file-title-row { align-items: flex-start; flex-direction: column; gap: 0.2rem; }
+}
+
+@media (min-width: 48rem) {
+  .app-shell.app-shell-guest { padding: 0; }
+  .guest-brand-header,
+  .guest-upload-content,
+  .guest-state-copy { width: min(100% - 4rem, 60rem); }
+  .guest-upload-content { gap: 2.6rem; padding-top: 4.25rem; }
+  .guest-event-header { grid-template-columns: minmax(0, 1fr) auto; column-gap: 2rem; }
+  .guest-event-header h1,
+  .guest-event-header .guest-event-intro { grid-column: 1; }
+  .guest-event-date { grid-column: 2; grid-row: 2; align-self: end; margin-bottom: 0.2rem; }
+  .guest-upload-intro { max-width: 37rem; }
+  .guest-file-picker { min-height: 15rem; }
+  .guest-upload-primary { min-width: 15.5rem; }
 }
 
 .admin-login-page,

@@ -27,7 +27,8 @@ class PresignedUploadControllerTests {
 
     private static final String ADMIN_EMAIL = "admin@example.com";
     private static final long MAX_IMAGE_SIZE_BYTES = 20L * 1024 * 1024;
-    private static final long MAX_VIDEO_SIZE_BYTES = 250L * 1024 * 1024;
+    private static final long PREVIOUS_MAX_VIDEO_SIZE_BYTES = 250L * 1024 * 1024;
+    private static final long MAX_VIDEO_SIZE_BYTES = 500L * 1024 * 1024;
 
     @Autowired
     private MockMvc mockMvc;
@@ -75,6 +76,13 @@ class PresignedUploadControllerTests {
 
         assertThat(response.path("storageKey").asText()).startsWith("events/active-video-token/").endsWith(".mov");
         assertThat(response.path("requiredHeaders").path("Content-Type").asText()).isEqualTo("video/quicktime");
+    }
+
+    @Test
+    void formerVideoLimitIsAccepted() throws Exception {
+        createEvent("previous-video-limit-token", true);
+
+        presign("previous-video-limit-token", "video.mp4", "video/mp4", PREVIOUS_MAX_VIDEO_SIZE_BYTES);
     }
 
     @Test

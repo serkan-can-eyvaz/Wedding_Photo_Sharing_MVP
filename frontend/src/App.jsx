@@ -8,9 +8,14 @@ import LandingPage from './pages/LandingPage.jsx';
 
 export default function App() {
   const { pathname } = useLocation();
+  const shellVariant = pathname === '/'
+    ? ' app-shell-landing'
+    : pathname.startsWith('/e/')
+      ? ' app-shell-guest'
+      : '';
 
   return (
-    <div className={`app-shell${pathname === '/' ? ' app-shell-landing' : ''}`}>
+    <div className={`app-shell${shellVariant}`}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/e/:token" element={<GuestEventPage />} />
