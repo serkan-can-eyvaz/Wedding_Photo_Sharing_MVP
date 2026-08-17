@@ -9,22 +9,26 @@ public record EventResponse(
         String name,
         LocalDate eventDate,
         String publicToken,
+        String publicUrl,
         String viewerUrl,
         String coverImageKey,
         boolean active,
-        Instant createdAt
+        Instant createdAt,
+        long mediaCount
 ) {
 
-    public static EventResponse from(Event event, String viewerUrl) {
+    public static EventResponse from(Event event, String publicUrl, String viewerUrl, long mediaCount) {
         return new EventResponse(
                 event.getId(),
                 event.getName(),
                 event.getEventDate(),
                 event.getPublicToken(),
+                publicUrl,
                 viewerUrl,
                 event.getCoverImageKey(),
                 event.isActive(),
-                event.getCreatedAt()
+                event.getCreatedAt(),
+                mediaCount
         );
     }
 }

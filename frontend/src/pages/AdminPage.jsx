@@ -67,21 +67,22 @@ export default function AdminPage() {
 
   return (
     <section className="admin-page">
-      <header className="admin-page-header">
-        <h1>Etkinlikler</h1>
-        <button type="button" className="secondary-button" onClick={handleLogout}>Çıkış yap</button>
+      <header className="admin-page-header admin-dashboard-header">
+        <div><p className="admin-eyebrow">YÖNETİM PANELİ</p><h1>Etkinlikler</h1><span>Tüm etkinlikleri, galerileri ve paylaşım bağlantılarını yönetin.</span></div>
+        <div><Link className="primary-button" to="/admin/events/new">+ Yeni etkinlik oluştur</Link><button type="button" className="secondary-button" onClick={handleLogout}>Çıkış yap</button></div>
       </header>
       {state.status === 'loading' && <p className="guest-page-state">Etkinlikler yükleniyor...</p>}
       {state.status === 'error' && <p className="guest-error" role="alert">Etkinlikler alınamadı. Lütfen tekrar deneyin.</p>}
-      {state.status === 'ready' && state.events.length === 0 && <p>Henüz etkinlik yok.</p>}
+      {state.status === 'ready' && state.events.length === 0 && <p className="admin-empty-state">Henüz etkinlik yok. İlk etkinliği oluşturarak başlayın.</p>}
       {downloadError && <p className="guest-error" role="alert">{downloadError}</p>}
       {state.status === 'ready' && state.events.length > 0 && (
         <ul className="admin-event-list">
           {state.events.map((event) => (
             <li key={event.id}>
               <Link to={`/admin/events/${event.id}`}>
-                <strong>{event.name}</strong>
-                <span>{event.eventDate}</span>
+                <div><strong>{event.name}</strong><span>{new Intl.DateTimeFormat('tr-TR', { dateStyle: 'long' }).format(new Date(`${event.eventDate}T00:00:00`))}</span></div>
+                <div className="admin-event-meta"><b className={event.active ? 'status-active' : 'status-inactive'}>{event.active ? 'AKTİF' : 'PASİF'}</b><span>{event.mediaCount} medya</span><span>{new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium' }).format(new Date(event.createdAt))}</span></div>
+                <em>Detayı aç →</em>
               </Link>
               <button
                 type="button"

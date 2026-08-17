@@ -61,6 +61,24 @@ export async function getAdminEvent(eventId) {
   return response.json();
 }
 
+export async function createAdminEvent(event) {
+  const response = await authenticatedRequest('/api/events', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(event),
+  });
+  return response.json();
+}
+
+export async function updateAdminEvent(eventId, event) {
+  const response = await authenticatedRequest(`/api/events/${encodeURIComponent(eventId)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(event),
+  });
+  return response.json();
+}
+
 export async function getEventMedia(eventId) {
   const response = await authenticatedRequest(`/api/events/${encodeURIComponent(eventId)}/media`);
   return response.json();

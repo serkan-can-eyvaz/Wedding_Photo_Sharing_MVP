@@ -1,6 +1,6 @@
 import { formatFileSize } from '../upload/uploadRules.js';
 
-export default function MediaGalleryCard({ media, selected, onToggle, onDownload, downloadDisabled }) {
+export default function MediaGalleryCard({ media, selected, onToggle, onDownload, onPreview, downloadDisabled }) {
   const isImage = media.mimeType.startsWith('image/');
   const createdAt = new Intl.DateTimeFormat('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })
     .format(new Date(media.createdAt));
@@ -12,7 +12,8 @@ export default function MediaGalleryCard({ media, selected, onToggle, onDownload
         Seç
       </label>
       {isImage && media.previewUrl ? (
-        <img src={media.previewUrl} alt={media.originalFilename} referrerPolicy="no-referrer" />
+        onPreview ? <button type="button" className="media-preview-trigger" onClick={() => onPreview(media)}><img src={media.previewUrl} alt={media.originalFilename} referrerPolicy="no-referrer" /></button>
+          : <img src={media.previewUrl} alt={media.originalFilename} referrerPolicy="no-referrer" />
       ) : (
         <div className="video-media-placeholder" aria-label="Video dosyası">Video</div>
       )}

@@ -2,6 +2,7 @@ package com.weddingshare.event;
 
 import com.weddingshare.user.User;
 import com.weddingshare.user.UserRepository;
+import com.weddingshare.media.MediaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,16 +21,19 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final MediaRepository mediaRepository;
     private final String normalizedPublicBaseUrl;
     private final SecureRandom secureRandom = new SecureRandom();
 
     public EventService(
             EventRepository eventRepository,
             UserRepository userRepository,
+            MediaRepository mediaRepository,
             @Value("${app.public-base-url}") String publicBaseUrl
     ) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
+        this.mediaRepository = mediaRepository;
         this.normalizedPublicBaseUrl = EventQrService.normalizePublicBaseUrl(publicBaseUrl);
     }
 
@@ -81,7 +85,12 @@ public class EventService {
     }
 
     private EventResponse response(Event event) {
-        return EventResponse.from(event, normalizedPublicBaseUrl + "/gallery/" + event.getViewerToken());
+        return EventResponse.from(
+                event,
+                normalizedPublicBaseUrl + "/e/" + event.getPublicToken(),
+                normalizedPublicBaseUrl + "/gallery/" + event.getViewerToken(),
+                mediaRepository.countByEventId(event.getId())
+        );
     }
 
     private String generateUniqueViewerToken() {

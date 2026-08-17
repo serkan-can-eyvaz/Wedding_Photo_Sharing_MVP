@@ -5,8 +5,10 @@ import {
   downloadAllMedia,
   downloadSelectedMedia,
   downloadSingleMedia,
+  downloadEventQr,
   getAdminEvent,
   getEventMedia,
+  updateAdminEvent,
 } from '../api/adminApi.js';
 import { clearAdminSession } from '../auth/adminSession.js';
 import MediaGalleryCard from '../components/MediaGalleryCard.jsx';
@@ -18,6 +20,10 @@ export default function AdminGalleryPage() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [downloadError, setDownloadError] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -29,6 +35,7 @@ export default function AdminGalleryPage() {
       .then(([event, media]) => {
         if (!cancelled) {
           setState({ status: 'ready', event, media });
+          setEditForm({ name: event.name, eventDate: event.eventDate, coverImageKey: event.coverImageKey ?? '', active: event.active });
         }
       })
       .catch((error) => {
@@ -53,13 +60,27 @@ export default function AdminGalleryPage() {
     navigate('/admin/login', { replace: true });
   };
 
-  const copyViewerLink = async () => {
+  const copyLink = async (link, label) => {
     try {
-      await navigator.clipboard.writeText(state.event.viewerUrl);
-      setDownloadError('Müşteri galeri linki kopyalandı.');
+      await navigator.clipboard.writeText(link);
+      setDownloadError(`${label} kopyalandı.`);
     } catch {
-      setDownloadError('Müşteri galeri linki kopyalanamadı.');
+      setDownloadError(`${label} kopyalanamadı.`);
     }
+  };
+
+  const saveEdit = async (event) => {
+    event.preventDefault();
+    setIsSaving(true); setDownloadError('');
+    try {
+      const updated = await updateAdminEvent(id, { ...editForm, name: editForm.name.trim(), coverImageKey: editForm.coverImageKey.trim() || null });
+      setState((current) => ({ ...current, event: updated }));
+      setEditForm({ name: updated.name, eventDate: updated.eventDate, coverImageKey: updated.coverImageKey ?? '', active: updated.active });
+      setIsEditing(false);
+    } catch (error) {
+      if (error instanceof AdminApiError && error.status === 401) { clearAdminSession(); navigate('/admin/login', { replace: true }); return; }
+      setDownloadError('Etkinlik güncellenemedi. Lütfen tekrar deneyin.');
+    } finally { setIsSaving(false); }
   };
 
   const toggleSelection = (mediaId) => {
@@ -116,33 +137,41 @@ export default function AdminGalleryPage() {
       {state.status === 'error' && <p className="guest-error" role="alert">Galeri alınamadı. Lütfen tekrar deneyin.</p>}
       {state.status === 'ready' && (
         <>
-          <header className="gallery-header">
-            <h1>{state.event.name}</h1>
-            <p>{state.media.length} medya</p>
-            <div className="admin-viewer-link">
-              <span>Müşteri galeri linki</span>
-              <a href={state.event.viewerUrl} target="_blank" rel="noreferrer">Galeriyi aç</a>
-              <button type="button" className="secondary-button" onClick={copyViewerLink}>Linki kopyala</button>
+          <header className="gallery-header admin-event-detail-header">
+            <div><p className="admin-eyebrow">ETKİNLİK OPERASYONU</p><h1>{state.event.name}</h1><p>{new Intl.DateTimeFormat('tr-TR', { dateStyle: 'long' }).format(new Date(`${state.event.eventDate}T00:00:00`))} · <b className={state.event.active ? 'status-active' : 'status-inactive'}>{state.event.active ? 'AKTİF' : 'PASİF'}</b> · {state.media.length} medya</p></div>
+            <div className="admin-detail-actions">
+              <button type="button" className="secondary-button" onClick={() => setIsEditing((value) => !value)}>Düzenle</button>
+              <button type="button" className="secondary-button" disabled={isDownloading} onClick={() => handleDownload(() => downloadEventQr(id), 'event-qr.png')}>QR indir</button>
+              <button type="button" className="primary-button" disabled={isDownloading || state.media.length === 0} onClick={() => handleDownload(() => downloadAllMedia(id), 'tum-medya.zip')}>Tümünü ZIP indir</button>
             </div>
           </header>
+          <section className="admin-operation-links">
+            <div><span>Misafir yükleme linki</span><a href={state.event.publicUrl} target="_blank" rel="noreferrer">Yükleme sayfasını aç</a><button type="button" className="secondary-button" onClick={() => copyLink(state.event.publicUrl, 'Misafir yükleme linki')}>Kopyala</button></div>
+            <div><span>Müşteri galeri linki</span><a href={state.event.viewerUrl} target="_blank" rel="noreferrer">Galeriyi aç</a><button type="button" className="secondary-button" onClick={() => copyLink(state.event.viewerUrl, 'Müşteri galeri linki')}>Kopyala</button></div>
+          </section>
+          {isEditing && editForm && <form className="admin-event-form admin-inline-form" onSubmit={saveEdit}>
+            <label>Etkinlik adı<input required value={editForm.name} onChange={(event) => setEditForm({ ...editForm, name: event.target.value })} /></label>
+            <label>Tarih<input required type="date" value={editForm.eventDate} onChange={(event) => setEditForm({ ...editForm, eventDate: event.target.value })} /></label>
+            <label>Kapak görsel anahtarı <small>Opsiyonel</small><input value={editForm.coverImageKey} onChange={(event) => setEditForm({ ...editForm, coverImageKey: event.target.value })} /></label>
+            <label className="admin-switch"><input type="checkbox" checked={editForm.active} onChange={(event) => setEditForm({ ...editForm, active: event.target.checked })} /> Etkinlik aktif</label>
+            <div><button type="submit" className="primary-button" disabled={isSaving}>{isSaving ? 'Kaydediliyor...' : 'Değişiklikleri kaydet'}</button><button type="button" className="secondary-button" onClick={() => setIsEditing(false)}>İptal</button></div>
+          </form>}
           {state.media.length > 0 && (
             <div className="gallery-selection-toolbar">
               <button type="button" className="secondary-button" onClick={selectAll}>Tümünü seç</button>
               <button type="button" className="secondary-button" onClick={clearSelection} disabled={selectedIds.size === 0}>Seçimi temizle</button>
               <span>{selectedIds.size} seçili</span>
-              {selectedIds.size > 0 && (
-                <button
-                  type="button"
-                  className="primary-button"
-                  disabled={isDownloading}
-                  onClick={() => handleDownload(
-                    () => downloadSelectedMedia(id, [...selectedIds]),
-                    'secilen-medya.zip',
-                  )}
-                >
-                  Seçilenleri indir
-                </button>
-              )}
+              <button
+                type="button"
+                className="primary-button"
+                disabled={isDownloading || selectedIds.size === 0}
+                onClick={() => handleDownload(
+                  () => downloadSelectedMedia(id, [...selectedIds]),
+                  'secilen-medya.zip',
+                )}
+              >
+                Seçilenleri indir
+              </button>
               <button
                 type="button"
                 className="primary-button"
@@ -168,11 +197,13 @@ export default function AdminGalleryPage() {
                     () => downloadSingleMedia(id, item.mediaId),
                     item.originalFilename,
                   )}
+                  onPreview={setPreview}
                   downloadDisabled={isDownloading}
                 />
               ))}
             </div>
           )}
+          {preview && <div className="media-preview-modal" role="dialog" aria-modal="true" aria-label={preview.originalFilename} onClick={() => setPreview(null)}><div onClick={(event) => event.stopPropagation()}><button type="button" className="secondary-button" onClick={() => setPreview(null)}>Kapat</button><img src={preview.previewUrl} alt={preview.originalFilename} referrerPolicy="no-referrer" /></div></div>}
         </>
       )}
     </section>
