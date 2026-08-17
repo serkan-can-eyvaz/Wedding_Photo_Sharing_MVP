@@ -11,6 +11,7 @@ CREATE TABLE events (
     name VARCHAR(255) NOT NULL,
     event_date DATE NOT NULL,
     public_token VARCHAR(255) NOT NULL UNIQUE,
+    viewer_token VARCHAR(255) NOT NULL UNIQUE,
     cover_image_key VARCHAR(255),
     active BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,

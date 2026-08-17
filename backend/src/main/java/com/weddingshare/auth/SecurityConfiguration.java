@@ -2,6 +2,7 @@ package com.weddingshare.auth;
 
 import com.weddingshare.user.User;
 import com.weddingshare.user.UserRepository;
+import com.weddingshare.event.EventService;
 import jakarta.servlet.DispatcherType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -49,6 +50,7 @@ public class SecurityConfiguration {
                         .dispatcherTypeMatchers(DispatcherType.ERROR, DispatcherType.ASYNC).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers("/api/viewer/**").permitAll()
                         .requestMatchers("/api/events/**").authenticated()
                         .anyRequest().denyAll()
                 )
@@ -69,6 +71,7 @@ public class SecurityConfiguration {
         configuration.setAllowedHeaders(List.of("Content-Type"));
         configuration.setAllowCredentials(false);
         source.registerCorsConfiguration("/api/public/**", configuration);
+        source.registerCorsConfiguration("/api/viewer/**", configuration);
 
         CorsConfiguration loginConfiguration = new CorsConfiguration();
         loginConfiguration.setAllowedOrigins(List.of(allowedOrigin));
@@ -101,5 +104,10 @@ public class SecurityConfiguration {
                 userRepository.save(new User(adminEmail, passwordEncoder.encode(adminPassword)));
             }
         };
+    }
+
+    @Bean
+    ApplicationRunner backfillViewerTokens(EventService eventService) {
+        return arguments -> eventService.backfillMissingViewerTokens();
     }
 }

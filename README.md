@@ -27,7 +27,7 @@ Docker Desktop ve Docker Compose plugin'i gerekir.
 
 Varsayılan adresler frontend için `http://localhost:5173`, backend API için `http://localhost:8080` ve PostgreSQL debug bağlantısı için `localhost:5432`'dir. Frontend portu değişirse `CORS_ALLOWED_ORIGIN` ve `APP_PUBLIC_BASE_URL`; backend portu değişirse `VITE_API_BASE_URL` birlikte güncellenmelidir.
 
-PostgreSQL şeması `infrastructure/postgres/init.sql` ile yalnızca `postgres_data` volume'u ilk kez boş oluşturulduğunda çalışır. Mevcut volume için otomatik migration yapılmaz; ileride schema değişirse migration gerekir veya local geliştirme verisi açıkça sıfırlanmalıdır.
+PostgreSQL şeması `infrastructure/postgres/init.sql` ile yalnızca `postgres_data` volume'u ilk kez boş oluşturulduğunda çalışır. Mevcut volume için otomatik migration yapılmaz. Customer Gallery Viewer gibi schema değişikliklerinde, backup sonrası `infrastructure/postgres/migrations/` altındaki staged upgrade SQL dosyaları operatör tarafından sırasıyla uygulanmalıdır; local geliştirme verisi açıkça sıfırlanmamalıdır.
 
 Backend, başlarken R2 endpoint, access key, secret ve bucket değerlerini doğrular. Local `.env` içindeki dummy R2 değerleri yalnızca backend startup/configuration denemesi için kullanılabilir; upload, preview ve download çalıştırmaz. Bu akışları test etmek için untracked `.env` içinde gerçek R2 bilgileri sağlayın.
 
@@ -41,7 +41,7 @@ Production stack'i VPS'te repository kökünden çalıştırın:
 docker compose --env-file infrastructure/.env.production -f infrastructure/docker-compose.production.yml up --build -d
 ```
 
-Yalnız Nginx `80` ve `443` portlarını yayınlar. Frontend, backend ve PostgreSQL yalnız Docker ağında erişilir; PostgreSQL public internete açılmaz. Nginx `/` isteklerini frontend'e, `/api/` isteklerini backend'e yönlendirir. Frontend container mevcut SPA fallback'i ile `/admin`, `/admin/events/{id}` ve `/e/{token}` deep-link isteklerini destekler.
+Yalnız Nginx `80` ve `443` portlarını yayınlar. Frontend, backend ve PostgreSQL yalnız Docker ağında erişilir; PostgreSQL public internete açılmaz. Nginx `/` isteklerini frontend'e, `/api/` isteklerini backend'e yönlendirir. Frontend container mevcut SPA fallback'i ile `/admin`, `/admin/events/{id}`, `/e/{token}` ve `/gallery/{viewerToken}` deep-link isteklerini destekler.
 
 `TLS_CERT_DIR`, VPS'te bulunan ve repository dışındaki `fullchain.pem` ile `privkey.pem` dosyalarını içeren mutlak dizini göstermelidir. HTTP'den HTTPS'e redirect hazırdır. Gerçek DNS, sertifika provision ve HTTPS smoke test M19'da yapılacaktır.
 

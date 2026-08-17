@@ -52,6 +52,10 @@ public class MediaDownloadService {
 
     public Media prepareSingleDownload(UUID ownerId, UUID eventId, UUID mediaId) {
         Event event = findOwnedEvent(ownerId, eventId);
+        return prepareSingleDownload(event, mediaId);
+    }
+
+    public Media prepareSingleDownload(Event event, UUID mediaId) {
         Media media = mediaRepository.findByIdAndEventId(mediaId, event.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         verifyObjectsAvailable(List.of(media));
@@ -64,6 +68,13 @@ public class MediaDownloadService {
         }
 
         Event event = findOwnedEvent(ownerId, eventId);
+        return prepareSelectedZip(event, requestedMediaIds);
+    }
+
+    public PreparedZipDownload prepareSelectedZip(Event event, List<UUID> requestedMediaIds) {
+        if (requestedMediaIds == null || requestedMediaIds.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
         List<UUID> mediaIds = new ArrayList<>(new LinkedHashSet<>(requestedMediaIds));
         List<Media> foundMedia = mediaRepository.findAllByEventIdAndIdIn(event.getId(), mediaIds);
         if (foundMedia.size() != mediaIds.size()) {
@@ -79,6 +90,10 @@ public class MediaDownloadService {
 
     public PreparedZipDownload prepareAllZip(UUID ownerId, UUID eventId) {
         Event event = findOwnedEvent(ownerId, eventId);
+        return prepareAllZip(event);
+    }
+
+    public PreparedZipDownload prepareAllZip(Event event) {
         List<Media> media = mediaRepository.findAllByEventIdOrderByCreatedAtDesc(event.getId());
         if (media.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);

@@ -53,6 +53,15 @@ export default function AdminGalleryPage() {
     navigate('/admin/login', { replace: true });
   };
 
+  const copyViewerLink = async () => {
+    try {
+      await navigator.clipboard.writeText(state.event.viewerUrl);
+      setDownloadError('Müşteri galeri linki kopyalandı.');
+    } catch {
+      setDownloadError('Müşteri galeri linki kopyalanamadı.');
+    }
+  };
+
   const toggleSelection = (mediaId) => {
     setSelectedIds((current) => {
       const next = new Set(current);
@@ -110,6 +119,11 @@ export default function AdminGalleryPage() {
           <header className="gallery-header">
             <h1>{state.event.name}</h1>
             <p>{state.media.length} medya</p>
+            <div className="admin-viewer-link">
+              <span>Müşteri galeri linki</span>
+              <a href={state.event.viewerUrl} target="_blank" rel="noreferrer">Galeriyi aç</a>
+              <button type="button" className="secondary-button" onClick={copyViewerLink}>Linki kopyala</button>
+            </div>
           </header>
           {state.media.length > 0 && (
             <div className="gallery-selection-toolbar">

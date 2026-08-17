@@ -5,6 +5,7 @@ import AdminGalleryPage from './pages/AdminGalleryPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
 import GuestEventPage from './pages/GuestEventPage.jsx';
 import LandingPage from './pages/LandingPage.jsx';
+import ViewerGalleryPage from './pages/ViewerGalleryPage.jsx';
 
 export default function App() {
   const { pathname } = useLocation();
@@ -12,6 +13,8 @@ export default function App() {
     ? ' app-shell-landing'
     : pathname.startsWith('/e/')
       ? ' app-shell-guest'
+      : pathname.startsWith('/gallery/')
+        ? ' app-shell-viewer'
       : '';
 
   return (
@@ -19,6 +22,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/e/:token" element={<GuestEventPage />} />
+        <Route path="/gallery/:viewerToken" element={<ViewerGalleryPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<AdminRoute><AdminPage /></AdminRoute>} />
         <Route path="/admin/events/:id" element={<AdminRoute><AdminGalleryPage /></AdminRoute>} />

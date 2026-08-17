@@ -61,11 +61,15 @@ class EventControllerTests {
     }
 
     @Test
-    void authenticatedCreateGeneratesIndependentPublicTokenAndDefaultsActiveToTrue() throws Exception {
+    void authenticatedCreateGeneratesIndependentPublicAndViewerTokensAndDefaultsActiveToTrue() throws Exception {
         JsonNode created = createAdminEvent("Ayşe & Mehmet", "2026-09-12", null, null);
 
         assertThat(created.path("publicToken").asText()).isNotEqualTo(created.path("id").asText());
         assertThat(created.path("publicToken").asText()).doesNotContain("=");
+        assertThat(created.path("viewerUrl").asText())
+                .startsWith("https://wedding.example/gallery/")
+                .doesNotContain(created.path("publicToken").asText())
+                .doesNotContain("=");
         assertThat(created.path("active").asBoolean()).isTrue();
     }
 

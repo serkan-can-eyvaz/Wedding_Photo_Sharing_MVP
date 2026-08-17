@@ -13,6 +13,8 @@ public interface MediaRepository extends JpaRepository<Media, UUID> {
 
     List<Media> findAllByEventIdOrderByCreatedAtDesc(UUID eventId);
 
+    long countByEventId(UUID eventId);
+
     Optional<Media> findByIdAndEventId(UUID id, UUID eventId);
 
     List<Media> findAllByEventIdAndIdIn(UUID eventId, Collection<UUID> ids);

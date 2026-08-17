@@ -704,6 +704,22 @@ button,
   margin: 0;
 }
 
+.admin-viewer-link,
+.viewer-gallery-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-viewer-link {
+  margin-top: 0.7rem;
+  color: var(--color-muted);
+  font-size: 0.84rem;
+}
+
+.admin-viewer-link a { color: var(--color-dark-brown); font-weight: 700; }
+
 .admin-event-list {
   display: grid;
   gap: 0.75rem;
@@ -783,6 +799,35 @@ button,
 
 .media-download-button {
   margin: 0 0.5rem 0.75rem;
+}
+
+.viewer-gallery-page {
+  display: grid;
+  gap: 1.25rem;
+  width: min(100% - 2rem, 68rem);
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.viewer-gallery-header {
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.viewer-gallery-header h1,
+.viewer-gallery-header p { margin: 0; }
+.viewer-gallery-header h1 { margin-top: 0.35rem; }
+.viewer-gallery-header > p:last-child { margin-top: 0.45rem; color: var(--color-muted); }
+.viewer-gallery-eyebrow { margin: 0; color: var(--color-espresso); font-size: 0.68rem; font-weight: 800; letter-spacing: 0.13em; }
+.viewer-gallery-state { min-height: 55vh; align-content: center; }
+.viewer-gallery-state h1 { margin: 0; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2.4rem, 9vw, 4rem); font-weight: 500; }
+.viewer-gallery-state > p:last-child,
+.viewer-gallery-empty { margin: 0; color: var(--color-muted); }
+.viewer-gallery-toolbar { align-items: flex-start; }
+
+@media (min-width: 48rem) {
+  .app-shell.app-shell-viewer { padding: 0; }
+  .viewer-gallery-page { width: min(100% - 4rem, 68rem); padding: 4rem 0; }
 }
 
 @media (min-width: 48rem) {

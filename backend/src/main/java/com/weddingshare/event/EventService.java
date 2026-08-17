@@ -3,7 +3,9 @@ package com.weddingshare.event;
 import com.weddingshare.user.User;
 import com.weddingshare.user.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.SecureRandom;
@@ -14,15 +16,21 @@ import java.util.UUID;
 @Service
 public class EventService {
 
-    private static final int PUBLIC_TOKEN_BYTES = 32;
+    private static final int TOKEN_BYTES = 32;
 
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
+    private final String normalizedPublicBaseUrl;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public EventService(EventRepository eventRepository, UserRepository userRepository) {
+    public EventService(
+            EventRepository eventRepository,
+            UserRepository userRepository,
+            @Value("${app.public-base-url}") String publicBaseUrl
+    ) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
+        this.normalizedPublicBaseUrl = EventQrService.normalizePublicBaseUrl(publicBaseUrl);
     }
 
     public EventResponse create(UUID ownerId, EventRequest request) {
@@ -33,22 +41,23 @@ public class EventService {
                 owner,
                 request.name(),
                 request.eventDate(),
-                generatePublicToken(),
+                generateToken(),
+                generateUniqueViewerToken(),
                 request.coverImageKey(),
                 active
         );
 
-        return EventResponse.from(eventRepository.save(event));
+        return response(eventRepository.save(event));
     }
 
     public List<EventResponse> list(UUID ownerId) {
         return eventRepository.findAllByOwnerIdOrderByCreatedAtDesc(ownerId).stream()
-                .map(EventResponse::from)
+                .map(this::response)
                 .toList();
     }
 
     public EventResponse get(UUID ownerId, UUID eventId) {
-        return EventResponse.from(findOwnedEvent(ownerId, eventId));
+        return response(findOwnedEvent(ownerId, eventId));
     }
 
     public EventResponse update(UUID ownerId, UUID eventId, EventRequest request) {
@@ -56,7 +65,14 @@ public class EventService {
         boolean active = request.active() == null ? event.isActive() : request.active();
         event.update(request.name(), request.eventDate(), request.coverImageKey(), active);
 
-        return EventResponse.from(eventRepository.save(event));
+        return response(eventRepository.save(event));
+    }
+
+    @Transactional
+    public int backfillMissingViewerTokens() {
+        List<Event> missingTokens = eventRepository.findAllByViewerTokenIsNull();
+        missingTokens.forEach(event -> event.setViewerToken(generateUniqueViewerToken()));
+        return missingTokens.size();
     }
 
     private Event findOwnedEvent(UUID ownerId, UUID eventId) {
@@ -64,8 +80,20 @@ public class EventService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    private String generatePublicToken() {
-        byte[] bytes = new byte[PUBLIC_TOKEN_BYTES];
+    private EventResponse response(Event event) {
+        return EventResponse.from(event, normalizedPublicBaseUrl + "/gallery/" + event.getViewerToken());
+    }
+
+    private String generateUniqueViewerToken() {
+        String token;
+        do {
+            token = generateToken();
+        } while (eventRepository.existsByViewerToken(token));
+        return token;
+    }
+
+    private String generateToken() {
+        byte[] bytes = new byte[TOKEN_BYTES];
         secureRandom.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }

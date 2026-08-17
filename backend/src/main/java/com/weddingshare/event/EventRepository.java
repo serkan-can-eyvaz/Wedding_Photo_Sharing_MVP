@@ -13,4 +13,10 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     Optional<Event> findByIdAndOwnerId(UUID id, UUID ownerId);
 
     Optional<Event> findByPublicTokenAndActiveTrue(String publicToken);
+
+    Optional<Event> findByViewerTokenAndActiveTrue(String viewerToken);
+
+    boolean existsByViewerToken(String viewerToken);
+
+    List<Event> findAllByViewerTokenIsNull();
 }

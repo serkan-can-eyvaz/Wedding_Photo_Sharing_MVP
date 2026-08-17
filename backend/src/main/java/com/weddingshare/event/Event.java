@@ -15,6 +15,8 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +25,9 @@ import java.util.UUID;
 @Entity
 @Table(name = "events")
 public class Event {
+
+    private static final int VIEWER_TOKEN_BYTES = 32;
+    private static final SecureRandom VIEWER_TOKEN_RANDOM = new SecureRandom();
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -41,6 +46,9 @@ public class Event {
     @Column(name = "public_token", nullable = false, unique = true)
     private String publicToken;
 
+    @Column(name = "viewer_token", nullable = false, unique = true)
+    private String viewerToken;
+
     @Column(name = "cover_image_key")
     private String coverImageKey;
 
@@ -56,13 +64,18 @@ public class Event {
     protected Event() {
     }
 
-    public Event(User owner, String name, LocalDate eventDate, String publicToken, String coverImageKey, boolean active) {
+    public Event(User owner, String name, LocalDate eventDate, String publicToken, String viewerToken, String coverImageKey, boolean active) {
         this.owner = owner;
         this.name = name;
         this.eventDate = eventDate;
         this.publicToken = publicToken;
+        this.viewerToken = viewerToken;
         this.coverImageKey = coverImageKey;
         this.active = active;
+    }
+
+    public Event(User owner, String name, LocalDate eventDate, String publicToken, String coverImageKey, boolean active) {
+        this(owner, name, eventDate, publicToken, generateViewerToken(), coverImageKey, active);
     }
 
     public UUID getId() {
@@ -79,6 +92,14 @@ public class Event {
 
     public String getPublicToken() {
         return publicToken;
+    }
+
+    public String getViewerToken() {
+        return viewerToken;
+    }
+
+    void setViewerToken(String viewerToken) {
+        this.viewerToken = viewerToken;
     }
 
     public String getCoverImageKey() {
@@ -105,5 +126,11 @@ public class Event {
         if (createdAt == null) {
             createdAt = Instant.now();
         }
+    }
+
+    private static String generateViewerToken() {
+        byte[] bytes = new byte[VIEWER_TOKEN_BYTES];
+        VIEWER_TOKEN_RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 }
