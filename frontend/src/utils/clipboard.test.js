@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { copyTextToClipboard } from './clipboard.js';
+import { toUserFacingUrl } from './userFacingUrl.js';
 
 function setGlobal(name, value) {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, name);
@@ -43,6 +44,21 @@ test('uses the modern Clipboard API when it succeeds', async () => {
   try {
     assert.equal(await copyTextToClipboard('https://example.test/gallery/token'), true);
     assert.deepEqual(calls, ['https://example.test/gallery/token']);
+  } finally {
+    restoreDocument();
+    restoreNavigator();
+  }
+});
+
+test('writes the user-facing event URL to the Clipboard API', async () => {
+  const calls = [];
+  const restoreNavigator = setGlobal('navigator', { clipboard: { writeText: async (text) => calls.push(text) } });
+  const { document } = createDocument(true);
+  const restoreDocument = setGlobal('document', document);
+
+  try {
+    await copyTextToClipboard(toUserFacingUrl('https://xn--aramzdan-wkb.com/e/abc'));
+    assert.deepEqual(calls, ['https://aramızdan.com/e/abc']);
   } finally {
     restoreDocument();
     restoreNavigator();

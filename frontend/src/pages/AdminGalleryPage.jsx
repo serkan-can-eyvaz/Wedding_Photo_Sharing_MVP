@@ -13,6 +13,7 @@ import {
 import { clearAdminSession } from '../auth/adminSession.js';
 import MediaGalleryCard from '../components/MediaGalleryCard.jsx';
 import { copyTextToClipboard } from '../utils/clipboard.js';
+import { toUserFacingUrl } from '../utils/userFacingUrl.js';
 
 export default function AdminGalleryPage() {
   const { id } = useParams();
@@ -125,6 +126,9 @@ export default function AdminGalleryPage() {
     }
   };
 
+  const publicUrl = toUserFacingUrl(state.event?.publicUrl);
+  const viewerUrl = toUserFacingUrl(state.event?.viewerUrl);
+
   return (
     <section className="admin-page">
       <header className="admin-page-header">
@@ -145,8 +149,8 @@ export default function AdminGalleryPage() {
             </div>
           </header>
           <section className="admin-operation-links">
-            <div><span>Misafir yükleme linki</span><a href={state.event.publicUrl} target="_blank" rel="noreferrer">Yükleme sayfasını aç</a><button type="button" className="secondary-button" onClick={() => copyLink(state.event.publicUrl, 'Misafir yükleme linki')}>Kopyala</button></div>
-            <div><span>Müşteri galeri linki</span><a href={state.event.viewerUrl} target="_blank" rel="noreferrer">Galeriyi aç</a><button type="button" className="secondary-button" onClick={() => copyLink(state.event.viewerUrl, 'Müşteri galeri linki')}>Kopyala</button></div>
+            <div><span>Misafir yükleme linki</span><a href={publicUrl} target="_blank" rel="noreferrer">Yükleme sayfasını aç</a><button type="button" className="secondary-button" onClick={() => copyLink(publicUrl, 'Misafir yükleme linki')}>Kopyala</button></div>
+            <div><span>Müşteri galeri linki</span><a href={viewerUrl} target="_blank" rel="noreferrer">Galeriyi aç</a><button type="button" className="secondary-button" onClick={() => copyLink(viewerUrl, 'Müşteri galeri linki')}>Kopyala</button></div>
           </section>
           {copyFeedback && <p className={`admin-operation-feedback admin-operation-feedback-${copyFeedback.type}`} role={copyFeedback.type === 'success' ? 'status' : 'alert'}>{copyFeedback.message}</p>}
           {isEditing && editForm && <form className="admin-event-form admin-inline-form" onSubmit={saveEdit}>
