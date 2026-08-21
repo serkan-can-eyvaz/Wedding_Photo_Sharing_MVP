@@ -5,8 +5,14 @@ services:
       APP_DOMAIN: ${APP_DOMAIN:?Set APP_DOMAIN in infrastructure/.env.production}
       NGINX_ENVSUBST_FILTER: APP_DOMAIN
     volumes:
-      - ./nginx/production.conf.template:/etc/nginx/templates/default.conf.template:ro
-      - ${TLS_CERT_DIR:?Set TLS_CERT_DIR in infrastructure/.env.production}:/etc/nginx/certs:ro
+      - type: bind
+        source: ./nginx/production.conf.template
+        target: /etc/nginx/templates/default.conf.template
+        read_only: true
+      - type: bind
+        source: ${TLS_CERT_DIR:?Set TLS_CERT_DIR in infrastructure/.env.production}
+        target: /etc/nginx/certs
+        read_only: true
     ports:
       - "80:80"
       - "443:443"
