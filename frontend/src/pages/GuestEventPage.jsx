@@ -5,15 +5,16 @@ import UploadFileRow from '../components/UploadFileRow.jsx';
 import { uploadToR2 } from '../upload/r2Upload.js';
 import { createReadyUploadJobs, createRetryUploadJobs } from '../upload/uploadQueue.js';
 import { validateFileSelection } from '../upload/uploadRules.js';
+import BrandLogo, { BRAND_NAME } from '../components/BrandLogo.jsx';
 
 const MAX_CONCURRENT_UPLOADS = 3;
 
 function GuestBrandHeader() {
   return (
     <header className="guest-brand-header">
-      <div className="guest-brand" aria-label="Marka Adı">
-        <span className="guest-brand-mark" aria-hidden="true">✦</span>
-        <span>Marka Adı</span>
+      <div className="guest-brand" aria-label={BRAND_NAME}>
+        <BrandLogo variant="mark" className="guest-brand-mark" decorative />
+        <span>{BRAND_NAME}</span>
       </div>
       <span className="guest-brand-context">ETKİNLİK GALERİSİ</span>
     </header>
@@ -227,12 +228,12 @@ export default function GuestEventPage() {
           <p className="guest-event-eyebrow">ETKİNLİK GALERİSİ</p>
           <h1>{eventState.event.name}</h1>
           <p className="guest-event-date">{eventDate}</p>
-          <p className="guest-event-intro">Çektiğiniz fotoğraf ve videoları buraya ekleyin.</p>
+          <p className="guest-event-intro">Bu özel günde senin gözünden de anılar biriksin.</p>
         </header>
 
         <section className="guest-upload-intro" aria-labelledby="guest-upload-title">
           <p className="guest-upload-eyebrow">ANILARI PAYLAŞIN</p>
-          <h2 id="guest-upload-title">Bu geceyi sizin gözünüzden de görelim.</h2>
+          <h2 id="guest-upload-title">Fotoğraf ve videolarını paylaş.</h2>
           <p>Fotoğraf ve videolarınızı seçin. Yüklenen tüm anılar çiftin özel galerisinde toplanır.</p>
         </section>
 

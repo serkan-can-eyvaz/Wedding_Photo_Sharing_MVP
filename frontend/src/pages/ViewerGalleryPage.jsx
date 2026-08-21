@@ -9,10 +9,12 @@ import {
   getViewerEvent,
   getViewerMedia,
 } from '../api/viewerApi.js';
+import BrandLogo, { BRAND_NAME } from '../components/BrandLogo.jsx';
 
 function ViewerState({ title, message }) {
   return (
     <section className="viewer-gallery-page viewer-gallery-state">
+      <div className="viewer-brand-lockup"><BrandLogo variant="mark" className="viewer-brand-mark" decorative /><span>{BRAND_NAME}</span></div>
       <p className="viewer-gallery-eyebrow">ÖZEL GALERİ</p>
       <h1>{title}</h1>
       <p>{message}</p>
@@ -84,6 +86,7 @@ export default function ViewerGalleryPage() {
   return (
     <section className="viewer-gallery-page">
       <header className="viewer-gallery-header">
+        <div className="viewer-brand-lockup"><BrandLogo variant="mark" className="viewer-brand-mark" decorative /><span>{BRAND_NAME}</span></div>
         <p className="viewer-gallery-eyebrow">ÖZEL GALERİ</p>
         <h1>{state.event.name}</h1>
         <p>{eventDate} · {state.event.mediaCount} medya</p>

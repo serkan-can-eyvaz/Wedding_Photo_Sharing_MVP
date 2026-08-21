@@ -1,11 +1,23 @@
 server {
     listen 80;
     listen [::]:80;
-    server_name ${APP_DOMAIN};
+    server_name ${APP_DOMAIN} www.${APP_DOMAIN};
 
     location / {
-        return 301 https://$host$request_uri;
+        return 301 https://${APP_DOMAIN}$request_uri;
     }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name www.${APP_DOMAIN};
+
+    ssl_certificate /etc/nginx/certs/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    return 301 https://${APP_DOMAIN}$request_uri;
 }
 
 server {

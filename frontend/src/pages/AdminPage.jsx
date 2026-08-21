@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AdminApiError, downloadEventQr, getAdminEvents } from '../api/adminApi.js';
 import { clearAdminSession } from '../auth/adminSession.js';
+import BrandLogo from '../components/BrandLogo.jsx';
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ export default function AdminPage() {
   return (
     <section className="admin-page">
       <header className="admin-page-header admin-dashboard-header">
-        <div><p className="admin-eyebrow">YÖNETİM PANELİ</p><h1>Etkinlikler</h1><span>Tüm etkinlikleri, galerileri ve paylaşım bağlantılarını yönetin.</span></div>
+        <div><BrandLogo variant="mark" className="admin-header-mark" decorative /><p className="admin-eyebrow">YÖNETİM PANELİ</p><h1>Etkinlikler</h1><span>Tüm etkinlikleri, galerileri ve paylaşım bağlantılarını yönetin.</span></div>
         <div><Link className="primary-button" to="/admin/events/new">+ Yeni etkinlik oluştur</Link><button type="button" className="secondary-button" onClick={handleLogout}>Çıkış yap</button></div>
       </header>
       {state.status === 'loading' && <p className="guest-page-state">Etkinlikler yükleniyor...</p>}

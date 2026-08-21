@@ -1,26 +1,26 @@
 :root {
-  --color-black: #171513;
-  --color-charcoal: #292522;
-  --color-espresso: #3a2d28;
-  --color-dark-brown: #51413a;
-  --color-taupe: #81746d;
-  --color-warm-gray: #9a938e;
-  --color-light-gray: #d8d3ce;
-  --color-ivory: #f4f1ec;
-  --color-soft-white: #faf9f7;
+  --color-black: #071726;
+  --color-charcoal: #091b2a;
+  --color-espresso: #14344c;
+  --color-dark-brown: #315064;
+  --color-taupe: #7e7c76;
+  --color-warm-gray: #b8aa98;
+  --color-light-gray: #e3ddd3;
+  --color-ivory: #f7f2ea;
+  --color-soft-white: #fcfaf7;
   --color-white: #ffffff;
   --color-background: var(--color-soft-white);
   --color-surface: var(--color-white);
   --color-surface-muted: var(--color-ivory);
   --color-text: var(--color-black);
   --color-muted: var(--color-taupe);
-  --color-accent: var(--color-dark-brown);
+  --color-accent: #c79653;
   --color-accent-strong: var(--color-charcoal);
   --color-accent-soft: var(--color-light-gray);
   --color-border: var(--color-light-gray);
-  --color-warm: var(--color-espresso);
-  --color-shadow-subtle: rgb(23 21 19 / 6%);
-  --color-shadow: rgb(23 21 19 / 11%);
+  --color-warm: #c79653;
+  --color-shadow-subtle: rgb(7 23 38 / 6%);
+  --color-shadow: rgb(7 23 38 / 11%);
   --color-surface-transparent: rgb(255 255 255 / 92%);
   --shadow-xs: 0 2px 8px var(--color-shadow-subtle);
   --shadow-sm: 0 8px 22px var(--color-shadow-subtle);
@@ -36,7 +36,7 @@
   --landing-section-gap: clamp(3.25rem, 7vw, 6rem);
   color: var(--color-text);
   background: var(--color-background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Poppins, "Segoe UI", Arial, sans-serif;
   font-synthesis: none;
   line-height: 1.5;
   text-size-adjust: 100%;
@@ -2524,4 +2524,82 @@ button,
   .landing-qr-preview { grid-column: auto; }
   .landing-gallery-preview { min-height: 22.5rem; }
   .landing-final-cta { grid-template-columns: 1fr auto; align-items: center; width: min(100% - 4rem, 72rem); padding: 2.6rem 3rem; }
+}
+
+/* Final aramızdan brand assets. */
+.brand-logo {
+  display: block;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.landing-brand-mark,
+.guest-brand-mark,
+.admin-header-mark,
+.viewer-brand-mark {
+  display: block;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  object-fit: contain;
+}
+
+.landing-brand-mark {
+  width: 2rem;
+  height: 2rem;
+}
+
+.landing-brand-lockup {
+  width: min(12.5rem, 58vw);
+  height: auto;
+}
+
+.landing-footer .landing-brand-mark {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+
+.guest-brand-mark {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+
+.admin-login-brand {
+  width: min(100%, 15.5rem);
+  margin-bottom: 0.65rem;
+}
+
+.admin-header-mark,
+.viewer-brand-mark {
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-bottom: 0.75rem;
+}
+
+.viewer-gallery-state .viewer-brand-mark {
+  margin-bottom: 0.2rem;
+}
+
+.viewer-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.3rem;
+  color: var(--color-charcoal);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.viewer-brand-lockup .viewer-brand-mark {
+  width: 1.95rem;
+  height: 1.95rem;
+  margin: 0;
+}
+
+@media (max-width: 22.5rem) {
+  .guest-brand-mark { width: 1.75rem; height: 1.75rem; }
 }

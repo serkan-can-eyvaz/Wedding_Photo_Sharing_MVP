@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminApiError, login } from '../api/adminApi.js';
 import { clearAdminSession, saveAdminSession } from '../auth/adminSession.js';
+import BrandLogo from '../components/BrandLogo.jsx';
 
 export default function AdminLoginPage() {
   const navigate = useNavigate();
@@ -31,6 +32,7 @@ export default function AdminLoginPage() {
 
   return (
     <section className="admin-login-page">
+      <BrandLogo className="admin-login-brand" />
       <h1>Yönetici girişi</h1>
       <form className="admin-login-form" onSubmit={handleSubmit}>
         <label>

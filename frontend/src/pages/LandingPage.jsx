@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
+import BrandLogo, { BRAND_NAME } from '../components/BrandLogo.jsx';
 
-const BRAND_NAME = 'Marka Adı';
 
 const steps = [
   {
@@ -57,14 +57,7 @@ const pricingPackages = [
 ];
 
 function BrandMark() {
-  return (
-    <span className="landing-brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" focusable="false">
-        <path d="M12 4.5c3.7 0 6.7 2.8 6.7 6.3 0 4.8-6.7 8.7-6.7 8.7s-6.7-3.9-6.7-8.7C5.3 7.3 8.3 4.5 12 4.5Z" />
-        <path d="M9.3 10.9 11.1 13l3.7-4.1" />
-      </svg>
-    </span>
-  );
+  return <BrandLogo variant="mark" className="landing-brand-mark" decorative />;
 }
 
 function StepIcon({ name }) {
@@ -101,8 +94,7 @@ export default function LandingPage() {
       <header className="landing-header">
         <nav className="landing-nav" aria-label="Ana navigasyon">
           <Link to="/" className="landing-brand" aria-label={`${BRAND_NAME} ana sayfa`}>
-            <BrandMark />
-            <span>{BRAND_NAME}</span>
+            <BrandLogo className="landing-brand-lockup" decorative />
           </Link>
           <div className="landing-nav-links">
             <a href="#nasil-calisir">Nasıl Çalışır?</a>
