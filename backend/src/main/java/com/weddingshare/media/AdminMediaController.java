@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import jakarta.validation.Valid;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -32,8 +32,13 @@ public class AdminMediaController {
     }
 
     @GetMapping("/{eventId}/media")
-    public List<MediaResponse> list(Authentication authentication, @PathVariable UUID eventId) {
-        return mediaService.listForOwnedEvent(authenticatedUserId(authentication), eventId);
+    public MediaPageResponse list(
+            Authentication authentication,
+            @PathVariable UUID eventId,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "40") int limit
+    ) {
+        return mediaService.listForOwnedEvent(authenticatedUserId(authentication), eventId, cursor, limit);
     }
 
     @GetMapping("/{eventId}/media/{mediaId}/download")

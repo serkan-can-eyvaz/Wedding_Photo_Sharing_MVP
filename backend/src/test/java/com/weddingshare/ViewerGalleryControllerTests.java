@@ -25,6 +25,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.io.ByteArrayInputStream;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,9 +80,41 @@ class ViewerGalleryControllerTests {
 
         mockMvc.perform(get("/api/viewer/events/{token}/media", "viewer-gallery-token"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].mediaId").value(image.getId().toString()))
-                .andExpect(jsonPath("$[0].previewUrl").value("https://example.invalid/preview"))
-                .andExpect(jsonPath("$[0].storageKey").doesNotExist());
+                .andExpect(jsonPath("$.items[0].mediaId").value(image.getId().toString()))
+                .andExpect(jsonPath("$.items[0].previewUrl").value("https://example.invalid/preview"))
+                .andExpect(jsonPath("$.items[0].storageKey").doesNotExist())
+                .andExpect(jsonPath("$.hasMore").value(false));
+    }
+
+    @Test
+    void viewerMediaListSupportsCursorPagesWithoutCrossEventItems() throws Exception {
+        Event event = event("viewer-paged-upload-token", "viewer-paged-token", true);
+        Media first = mediaRepository.save(new Media(event, "events/viewer-paged-upload-token/one.jpg", "one.jpg", "image/jpeg", 1024));
+        Media second = mediaRepository.save(new Media(event, "events/viewer-paged-upload-token/two.jpg", "two.jpg", "image/jpeg", 1024));
+        Event other = event("viewer-other-upload-token", "viewer-other-token", true);
+        mediaRepository.save(new Media(other, "events/viewer-other-upload-token/private.jpg", "private.jpg", "image/jpeg", 1024));
+        when(mediaPreviewUrlService.createImagePreviewUrl(any(Media.class))).thenReturn("https://example.invalid/preview");
+
+        MvcResult firstResult = mockMvc.perform(get("/api/viewer/events/{token}/media", "viewer-paged-token").queryParam("limit", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.hasMore").value(true))
+                .andReturn();
+        String cursor = objectMapper.readTree(firstResult.getResponse().getContentAsString()).path("nextCursor").asText();
+
+        JsonNode secondPage = objectMapper.readTree(mockMvc.perform(get("/api/viewer/events/{token}/media", "viewer-paged-token")
+                        .queryParam("limit", "1")
+                        .queryParam("cursor", cursor))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.hasMore").value(false))
+                .andReturn().getResponse().getContentAsString());
+
+        Set<String> itemIds = Set.of(
+                objectMapper.readTree(firstResult.getResponse().getContentAsString()).path("items").get(0).path("mediaId").asText(),
+                secondPage.path("items").get(0).path("mediaId").asText()
+        );
+        assertThat(itemIds).containsExactlyInAnyOrder(first.getId().toString(), second.getId().toString());
     }
 
     @Test
@@ -90,6 +123,8 @@ class ViewerGalleryControllerTests {
 
         for (String token : List.of("unknown-viewer-token", "inactive-viewer-token", "active-public-token")) {
             mockMvc.perform(get("/api/viewer/events/{token}", token))
+                    .andExpect(status().isNotFound());
+            mockMvc.perform(get("/api/viewer/events/{token}/media", token))
                     .andExpect(status().isNotFound());
         }
     }

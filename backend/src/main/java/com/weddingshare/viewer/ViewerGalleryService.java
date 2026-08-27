@@ -5,8 +5,8 @@ import com.weddingshare.event.EventRepository;
 import com.weddingshare.media.Media;
 import com.weddingshare.media.MediaDownloadService;
 import com.weddingshare.media.MediaRepository;
-import com.weddingshare.media.MediaResponse;
-import com.weddingshare.storage.MediaPreviewUrlService;
+import com.weddingshare.media.MediaPageResponse;
+import com.weddingshare.media.MediaPageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,18 +20,18 @@ public class ViewerGalleryService {
 
     private final EventRepository eventRepository;
     private final MediaRepository mediaRepository;
-    private final MediaPreviewUrlService mediaPreviewUrlService;
+    private final MediaPageService mediaPageService;
     private final MediaDownloadService mediaDownloadService;
 
     public ViewerGalleryService(
             EventRepository eventRepository,
             MediaRepository mediaRepository,
-            MediaPreviewUrlService mediaPreviewUrlService,
+            MediaPageService mediaPageService,
             MediaDownloadService mediaDownloadService
     ) {
         this.eventRepository = eventRepository;
         this.mediaRepository = mediaRepository;
-        this.mediaPreviewUrlService = mediaPreviewUrlService;
+        this.mediaPageService = mediaPageService;
         this.mediaDownloadService = mediaDownloadService;
     }
 
@@ -42,11 +42,9 @@ public class ViewerGalleryService {
     }
 
     @Transactional(readOnly = true)
-    public List<MediaResponse> listMedia(String viewerToken) {
+    public MediaPageResponse listMedia(String viewerToken, String cursor, int limit) {
         Event event = findActiveEvent(viewerToken);
-        return mediaRepository.findAllByEventIdOrderByCreatedAtDesc(event.getId()).stream()
-                .map(media -> MediaResponse.from(media, mediaPreviewUrlService.createImagePreviewUrl(media)))
-                .toList();
+        return mediaPageService.listForEvent(event, cursor, limit);
     }
 
     public Media prepareSingleDownload(String viewerToken, UUID mediaId) {

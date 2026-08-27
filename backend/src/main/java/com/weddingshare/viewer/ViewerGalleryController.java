@@ -3,7 +3,7 @@ package com.weddingshare.viewer;
 import com.weddingshare.media.Media;
 import com.weddingshare.media.MediaDownloadRequest;
 import com.weddingshare.media.MediaDownloadService;
-import com.weddingshare.media.MediaResponse;
+import com.weddingshare.media.MediaPageResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -39,8 +40,12 @@ public class ViewerGalleryController {
     }
 
     @GetMapping("/media")
-    public List<MediaResponse> listMedia(@PathVariable String viewerToken) {
-        return viewerGalleryService.listMedia(viewerToken);
+    public MediaPageResponse listMedia(
+            @PathVariable String viewerToken,
+            @RequestParam(required = false) String cursor,
+            @RequestParam(defaultValue = "40") int limit
+    ) {
+        return viewerGalleryService.listMedia(viewerToken, cursor, limit);
     }
 
     @GetMapping("/media/{mediaId}/download")

@@ -1,4 +1,5 @@
 import { apiFetch } from './client.js';
+import { mediaPagePath } from '../utils/mediaPagination.js';
 
 export class ViewerApiError extends Error {
   constructor(status) {
@@ -29,8 +30,8 @@ export async function getViewerEvent(viewerToken) {
   return (await request(eventPath(viewerToken))).json();
 }
 
-export async function getViewerMedia(viewerToken) {
-  return (await request(`${eventPath(viewerToken)}/media`)).json();
+export async function getViewerMedia(viewerToken, cursor) {
+  return (await request(mediaPagePath(`${eventPath(viewerToken)}/media`, cursor))).json();
 }
 
 async function download(path, options) {

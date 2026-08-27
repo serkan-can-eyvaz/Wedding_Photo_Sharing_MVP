@@ -1,5 +1,6 @@
 import { getAdminSession } from '../auth/adminSession.js';
 import { apiFetch } from './client.js';
+import { mediaPagePath } from '../utils/mediaPagination.js';
 
 export class AdminApiError extends Error {
   constructor(status) {
@@ -79,8 +80,8 @@ export async function updateAdminEvent(eventId, event) {
   return response.json();
 }
 
-export async function getEventMedia(eventId) {
-  const response = await authenticatedRequest(`/api/events/${encodeURIComponent(eventId)}/media`);
+export async function getEventMedia(eventId, cursor) {
+  const response = await authenticatedRequest(mediaPagePath(`/api/events/${encodeURIComponent(eventId)}/media`, cursor));
   return response.json();
 }
 

@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import MediaGalleryCard from '../components/MediaGalleryCard.jsx';
+import InfiniteScrollSentinel from '../components/InfiniteScrollSentinel.jsx';
 import {
   ViewerApiError,
   downloadViewerAllMedia,
@@ -10,6 +11,7 @@ import {
   getViewerMedia,
 } from '../api/viewerApi.js';
 import BrandLogo, { BRAND_NAME } from '../components/BrandLogo.jsx';
+import { addLoadedMediaToSelection, appendUniqueMedia, canLoadNextMediaPage } from '../utils/mediaPagination.js';
 
 function ViewerState({ title, message }) {
   return (
@@ -28,18 +30,56 @@ export default function ViewerGalleryPage() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [downloadError, setDownloadError] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [pageState, setPageState] = useState({ hasMore: false, nextCursor: null, isLoading: false, error: '' });
+  const requestGenerationRef = useRef(0);
+  const loadingMoreRef = useRef(false);
+
+  const loadMore = useCallback(async () => {
+    const cursor = pageState.nextCursor;
+    if (!canLoadNextMediaPage({ hasMore: pageState.hasMore, nextCursor: cursor, isLoading: loadingMoreRef.current })) {
+      return;
+    }
+
+    const generation = requestGenerationRef.current;
+    loadingMoreRef.current = true;
+    setPageState((current) => ({ ...current, isLoading: true, error: '' }));
+    try {
+      const page = await getViewerMedia(viewerToken, cursor);
+      if (generation !== requestGenerationRef.current) {
+        return;
+      }
+      setState((current) => ({ ...current, media: appendUniqueMedia(current.media, page.items) }));
+      setPageState({ hasMore: page.hasMore, nextCursor: page.nextCursor, isLoading: false, error: '' });
+    } catch {
+      if (generation !== requestGenerationRef.current) {
+        return;
+      }
+      setPageState((current) => ({ ...current, isLoading: false, error: 'next-page' }));
+    } finally {
+      if (generation === requestGenerationRef.current) {
+        loadingMoreRef.current = false;
+      }
+    }
+  }, [pageState.hasMore, pageState.nextCursor, viewerToken]);
 
   useEffect(() => {
     let cancelled = false;
+    const generation = requestGenerationRef.current + 1;
+    requestGenerationRef.current = generation;
+    loadingMoreRef.current = false;
     setState({ status: 'loading', event: null, media: [] });
     setSelectedIds(new Set());
+    setPageState({ hasMore: false, nextCursor: null, isLoading: false, error: '' });
 
     Promise.all([getViewerEvent(viewerToken), getViewerMedia(viewerToken)])
-      .then(([event, media]) => {
-        if (!cancelled) setState({ status: 'ready', event, media });
+      .then(([event, page]) => {
+        if (!cancelled && generation === requestGenerationRef.current) {
+          setState({ status: 'ready', event, media: page.items });
+          setPageState({ hasMore: page.hasMore, nextCursor: page.nextCursor, isLoading: false, error: '' });
+        }
       })
       .catch((error) => {
-        if (!cancelled) setState({ status: error instanceof ViewerApiError && error.status === 404 ? 'not-found' : 'error', event: null, media: [] });
+        if (!cancelled && generation === requestGenerationRef.current) setState({ status: error instanceof ViewerApiError && error.status === 404 ? 'not-found' : 'error', event: null, media: [] });
       });
 
     return () => { cancelled = true; };
@@ -98,7 +138,7 @@ export default function ViewerGalleryPage() {
           <div className="gallery-selection-toolbar viewer-gallery-toolbar">
             <span>{selected.length} seçili</span>
             <div>
-              <button type="button" className="secondary-button" onClick={() => setSelectedIds(new Set(state.media.map((media) => media.mediaId)))}>Tümünü seç</button>
+              <button type="button" className="secondary-button" onClick={() => setSelectedIds((current) => addLoadedMediaToSelection(current, state.media))}>Yüklenenleri seç</button>
               {selected.length > 0 && <button type="button" className="secondary-button" disabled={isDownloading} onClick={() => handleDownload(() => downloadViewerSelectedMedia(viewerToken, selected), 'secili-medya.zip')}>Seçilenleri indir</button>}
               <button type="button" className="primary-button" disabled={isDownloading} onClick={() => handleDownload(() => downloadViewerAllMedia(viewerToken), 'tum-medya.zip')}>Tümünü indir</button>
             </div>
@@ -116,6 +156,12 @@ export default function ViewerGalleryPage() {
               />
             ))}
           </div>
+          <InfiniteScrollSentinel
+            hasMore={pageState.hasMore}
+            isLoading={pageState.isLoading}
+            error={pageState.error}
+            onLoadMore={loadMore}
+          />
         </>
       )}
     </section>

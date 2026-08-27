@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   AdminApiError,
@@ -12,7 +12,9 @@ import {
 } from '../api/adminApi.js';
 import { clearAdminSession } from '../auth/adminSession.js';
 import MediaGalleryCard from '../components/MediaGalleryCard.jsx';
+import InfiniteScrollSentinel from '../components/InfiniteScrollSentinel.jsx';
 import { copyTextToClipboard } from '../utils/clipboard.js';
+import { addLoadedMediaToSelection, appendUniqueMedia, canLoadNextMediaPage } from '../utils/mediaPagination.js';
 import { toUserFacingUrl } from '../utils/userFacingUrl.js';
 
 export default function AdminGalleryPage() {
@@ -27,23 +29,64 @@ export default function AdminGalleryPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [preview, setPreview] = useState(null);
   const [copyFeedback, setCopyFeedback] = useState(null);
+  const [pageState, setPageState] = useState({ hasMore: false, nextCursor: null, isLoading: false, error: '' });
+  const requestGenerationRef = useRef(0);
+  const loadingMoreRef = useRef(false);
+
+  const loadMore = useCallback(async () => {
+    const cursor = pageState.nextCursor;
+    if (!canLoadNextMediaPage({ hasMore: pageState.hasMore, nextCursor: cursor, isLoading: loadingMoreRef.current })) {
+      return;
+    }
+
+    const generation = requestGenerationRef.current;
+    loadingMoreRef.current = true;
+    setPageState((current) => ({ ...current, isLoading: true, error: '' }));
+    try {
+      const page = await getEventMedia(id, cursor);
+      if (generation !== requestGenerationRef.current) {
+        return;
+      }
+      setState((current) => ({ ...current, media: appendUniqueMedia(current.media, page.items) }));
+      setPageState({ hasMore: page.hasMore, nextCursor: page.nextCursor, isLoading: false, error: '' });
+    } catch (error) {
+      if (generation !== requestGenerationRef.current) {
+        return;
+      }
+      if (error instanceof AdminApiError && error.status === 401) {
+        clearAdminSession();
+        navigate('/admin/login', { replace: true });
+        return;
+      }
+      setPageState((current) => ({ ...current, isLoading: false, error: 'next-page' }));
+    } finally {
+      if (generation === requestGenerationRef.current) {
+        loadingMoreRef.current = false;
+      }
+    }
+  }, [id, navigate, pageState.hasMore, pageState.nextCursor]);
 
   useEffect(() => {
     let cancelled = false;
+    const generation = requestGenerationRef.current + 1;
+    requestGenerationRef.current = generation;
+    loadingMoreRef.current = false;
     setSelectedIds(new Set());
     setDownloadError('');
     setCopyFeedback(null);
     setState({ status: 'loading', event: null, media: [] });
+    setPageState({ hasMore: false, nextCursor: null, isLoading: false, error: '' });
 
     Promise.all([getAdminEvent(id), getEventMedia(id)])
-      .then(([event, media]) => {
-        if (!cancelled) {
-          setState({ status: 'ready', event, media });
+      .then(([event, page]) => {
+        if (!cancelled && generation === requestGenerationRef.current) {
+          setState({ status: 'ready', event, media: page.items });
+          setPageState({ hasMore: page.hasMore, nextCursor: page.nextCursor, isLoading: false, error: '' });
           setEditForm({ name: event.name, eventDate: event.eventDate, coverImageKey: event.coverImageKey ?? '', active: event.active });
         }
       })
       .catch((error) => {
-        if (cancelled) {
+        if (cancelled || generation !== requestGenerationRef.current) {
           return;
         }
         if (error instanceof AdminApiError && error.status === 401) {
@@ -95,7 +138,7 @@ export default function AdminGalleryPage() {
     });
   };
 
-  const selectAll = () => setSelectedIds(new Set(state.media.map((media) => media.mediaId)));
+  const selectAll = () => setSelectedIds((current) => addLoadedMediaToSelection(current, state.media));
   const clearSelection = () => setSelectedIds(new Set());
 
   const saveBlob = (blob, filename) => {
@@ -141,11 +184,11 @@ export default function AdminGalleryPage() {
       {state.status === 'ready' && (
         <>
           <header className="gallery-header admin-event-detail-header">
-            <div><p className="admin-eyebrow">ETKİNLİK OPERASYONU</p><h1>{state.event.name}</h1><p>{new Intl.DateTimeFormat('tr-TR', { dateStyle: 'long' }).format(new Date(`${state.event.eventDate}T00:00:00`))} · <b className={state.event.active ? 'status-active' : 'status-inactive'}>{state.event.active ? 'AKTİF' : 'PASİF'}</b> · {state.media.length} medya</p></div>
+            <div><p className="admin-eyebrow">ETKİNLİK OPERASYONU</p><h1>{state.event.name}</h1><p>{new Intl.DateTimeFormat('tr-TR', { dateStyle: 'long' }).format(new Date(`${state.event.eventDate}T00:00:00`))} · <b className={state.event.active ? 'status-active' : 'status-inactive'}>{state.event.active ? 'AKTİF' : 'PASİF'}</b> · {state.event.mediaCount} medya</p></div>
             <div className="admin-detail-actions">
               <button type="button" className="secondary-button" onClick={() => setIsEditing((value) => !value)}>Düzenle</button>
               <button type="button" className="secondary-button" disabled={isDownloading} onClick={() => handleDownload(() => downloadEventQr(id), 'event-qr.png')}>QR indir</button>
-              <button type="button" className="primary-button" disabled={isDownloading || state.media.length === 0} onClick={() => handleDownload(() => downloadAllMedia(id), 'tum-medya.zip')}>Tümünü ZIP indir</button>
+              <button type="button" className="primary-button" disabled={isDownloading || state.event.mediaCount === 0} onClick={() => handleDownload(() => downloadAllMedia(id), 'tum-medya.zip')}>Tümünü ZIP indir</button>
             </div>
           </header>
           <section className="admin-operation-links">
@@ -162,7 +205,7 @@ export default function AdminGalleryPage() {
           </form>}
           {state.media.length > 0 && (
             <div className="gallery-selection-toolbar">
-              <button type="button" className="secondary-button" onClick={selectAll}>Tümünü seç</button>
+              <button type="button" className="secondary-button" onClick={selectAll}>Yüklenenleri seç</button>
               <button type="button" className="secondary-button" onClick={clearSelection} disabled={selectedIds.size === 0}>Seçimi temizle</button>
               <span>{selectedIds.size} seçili</span>
               <button
@@ -190,22 +233,30 @@ export default function AdminGalleryPage() {
           {state.media.length === 0 ? (
             <p>Bu etkinlikte henüz medya yok.</p>
           ) : (
-            <div className="media-gallery-grid">
-              {state.media.map((media) => (
-                <MediaGalleryCard
-                  key={media.mediaId}
-                  media={media}
-                  selected={selectedIds.has(media.mediaId)}
-                  onToggle={toggleSelection}
-                  onDownload={(item) => handleDownload(
-                    () => downloadSingleMedia(id, item.mediaId),
-                    item.originalFilename,
-                  )}
-                  onPreview={setPreview}
-                  downloadDisabled={isDownloading}
-                />
-              ))}
-            </div>
+            <>
+              <div className="media-gallery-grid">
+                {state.media.map((media) => (
+                  <MediaGalleryCard
+                    key={media.mediaId}
+                    media={media}
+                    selected={selectedIds.has(media.mediaId)}
+                    onToggle={toggleSelection}
+                    onDownload={(item) => handleDownload(
+                      () => downloadSingleMedia(id, item.mediaId),
+                      item.originalFilename,
+                    )}
+                    onPreview={setPreview}
+                    downloadDisabled={isDownloading}
+                  />
+                ))}
+              </div>
+              <InfiniteScrollSentinel
+                hasMore={pageState.hasMore}
+                isLoading={pageState.isLoading}
+                error={pageState.error}
+                onLoadMore={loadMore}
+              />
+            </>
           )}
           {preview && <div className="media-preview-modal" role="dialog" aria-modal="true" aria-label={preview.originalFilename} onClick={() => setPreview(null)}><div onClick={(event) => event.stopPropagation()}><button type="button" className="secondary-button" onClick={() => setPreview(null)}>Kapat</button><img src={preview.previewUrl} alt={preview.originalFilename} referrerPolicy="no-referrer" /></div></div>}
         </>

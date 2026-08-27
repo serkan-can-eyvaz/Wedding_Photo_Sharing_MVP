@@ -12,8 +12,8 @@ export default function MediaGalleryCard({ media, selected, onToggle, onDownload
         Seç
       </label>
       {isImage && media.previewUrl ? (
-        onPreview ? <button type="button" className="media-preview-trigger" onClick={() => onPreview(media)}><img src={media.previewUrl} alt={media.originalFilename} referrerPolicy="no-referrer" /></button>
-          : <img src={media.previewUrl} alt={media.originalFilename} referrerPolicy="no-referrer" />
+        onPreview ? <button type="button" className="media-preview-trigger" onClick={() => onPreview(media)}><img src={media.previewUrl} alt={media.originalFilename} loading="lazy" decoding="async" referrerPolicy="no-referrer" /></button>
+          : <img src={media.previewUrl} alt={media.originalFilename} loading="lazy" decoding="async" referrerPolicy="no-referrer" />
       ) : (
         <div className="video-media-placeholder" aria-label="Video dosyası">Video</div>
       )}
